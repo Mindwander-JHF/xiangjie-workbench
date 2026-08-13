@@ -91,6 +91,14 @@
   .yr-sub{font-size:12px;color:var(--sub);margin-top:6px}
   /* today card */
   .today-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  .home-dual{display:flex;gap:18px;align-items:flex-start;margin-bottom:18px}
+  .home-dual .sales-ov{flex:0 1 auto;width:clamp(440px,63%,760px)}
+  .home-dual .proj-ov{flex:1 1 auto;min-width:0}
+  .proj-mini{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+  .proj-mini li{display:flex;align-items:center;gap:10px;padding:9px 11px;background:var(--chip);border-radius:9px;min-width:0}
+  .proj-mini .pn{flex:1 1 auto;min-width:0;font-weight:700;font-size:13.5px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .proj-mini .pq{flex:0 0 auto;font-size:12.5px;color:var(--sub);white-space:nowrap}
+  .proj-mini .pt{flex:0 0 auto}
   .today-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
   .today-head span:first-child{font-size:15px;font-weight:700}
   .badge{font-size:12px;padding:3px 10px;border-radius:20px;font-weight:600}
@@ -194,6 +202,8 @@
     .btn{padding:7px 11px;font-size:12.5px}
     .view{padding:14px}
     .kpi-grid{grid-template-columns:repeat(2,1fr)}
+    .home-dual{flex-direction:column}
+    .home-dual .sales-ov{width:100%}
     .card-grid{grid-template-columns:1fr}
     .yr-grid{grid-template-columns:1fr}
   }
@@ -661,14 +671,17 @@ function yearAmt(year){return (state.purchaseCustomers||[]).filter(p=>p.年度==
 function allAmt(){return (state.purchaseCustomers||[]).reduce((a,b)=>a+Number(b.开票金额||b.销售价格||0),0);}
 /* 销售概览已合并为 renderHome 中的统一底框（见「销售项目概览」），旧 helper boxedSales/bareSales 停用 */
 function homeMetrics(){
-  const projN=(state.projects||[]).filter(p=>p.项目进度!=='车辆交付').length;
+  const projects=(state.projects||[]);
+  const projTotal=projects.length;
+  const projActive=projects.filter(p=>p.项目进度!=='车辆交付').length;
   const keyN=(state.keyProjects||[]).filter(k=>k.状态!=='已完成').length;
   const evN=(state.events||[]).filter(e=>e.状态!=='已完成').length;
-  const overdueN=(state.projects||[]).filter(projOverdue).length;
+  const overdueN=projects.filter(projOverdue).length;
   const pur26=(state.purchaseCustomers||[]).filter(p=>p.年度==='2026');
   const salesB=pur26.reduce((a,b)=>a+Number(b.采购数量||b.数量||0),0);
-  const budgetB=pur26.reduce((a,b)=>a+Number(b.预算金额||0),0)/10000;
-  return {projN,keyN,evN,overdueN,salesB,budgetB,salesPct:SALES_TARGET?Math.round(salesB/SALES_TARGET*100):0,budgetPct:BUDGET_TARGET?Math.round(budgetB/BUDGET_TARGET*100):0,todo:projN+keyN+evN};
+  const deliveredN=pur26.filter(p=>p.销售状态==='交付闭环').length;
+  const budgetB=pur26.reduce((a,b)=>a+Number(b.分担预算||0),0)/10000;
+  return {projTotal,projActive,keyN,evN,overdueN,salesB,deliveredN,budgetB,salesPct:SALES_TARGET?Math.round(salesB/SALES_TARGET*100):0,budgetPct:BUDGET_TARGET?Math.round(budgetB/BUDGET_TARGET*100):0,todo:projActive+keyN+evN};
 }
 function renderHome(){
   let h=`<div class="home">`;
@@ -676,9 +689,9 @@ function renderHome(){
   // 置顶项目面板（6项）
   const m=homeMetrics();
   const panel=[
-    {n:m.projN,l:'跟进项目',sub:'未闭环',c:'var(--primary)',i:ICON.projects},
+    {n:m.projTotal,l:'项目推进',sub:'项目数量',c:'var(--primary)',i:ICON.projects},
     {n:m.keyN,l:'重点工作',sub:'未闭环',c:'var(--amber)',i:ICON.keyProjects},
-    {n:m.salesPct+'%',l:'销量进度',sub:`目标${SALES_TARGET}台·已售${m.salesB}台`,c:m.salesPct>=100?'var(--green)':'var(--primary)',i:ICON.policies},
+    {n:m.deliveredN,l:'销售进度',sub:'2026·交付闭环（台）',c:'var(--primary)',i:ICON.policies},
     {n:m.budgetPct+'%',l:'预算进度',sub:`预算${BUDGET_TARGET}万·已用${m.budgetB.toFixed(1)}万`,c:m.budgetPct>=100?'var(--green)':'var(--red)',i:ICON.models},
     {n:m.todo,l:'待办事项',sub:'待处理',c:'var(--navy)',i:ICON.developments},
     {n:m.overdueN,l:'逾期风险',sub:'项目推进',c:m.overdueN?'var(--red)':'var(--green)',i:ICON.events}
@@ -687,11 +700,27 @@ function renderHome(){
   h+=`<div class="kpi-grid">`+panel.map(k=>`<div class="kpi"><div class="kpi-title">${k.l}</div><div class="kpi-main"><div class="kpi-ico" style="color:${k.c}">${k.i}</div><div class="kpi-n" style="color:${k.c}">${k.n}</div></div><div class="kpi-sub">${k.sub}</div></div>`).join('')+`</div>`;
   // 销量概览 + 2025 + 2026 销售项目，统一放入一个底框
   const smT=salesMetrics(null), sm25=salesMetrics('2025'), sm26=salesMetrics('2026');
-  h+=`<div class="yr-card" style="margin-bottom:18px"><div class="yr-head"><h3>销售项目概览</h3></div>`
+  h+=`<div class="home-dual">`;
+  h+=`<div class="yr-card sales-ov"><div class="yr-head"><h3>销售项目概览</h3></div>`
     +`<div class="sales-block"><div class="sales-block-h">销量概览（累计）<span class="yr-total">合计 <b>${smT.累计}</b> 台 · ¥${shortMoney(allAmt())}</span></div>${salesMetricCards(smT,'overview')}</div>`
     +`<div class="sales-block"><div class="sales-block-h">2025年销售项目<span class="yr-total">合计 <b>${sm25.累计}</b> 台 · ¥${shortMoney(yearAmt('2025'))}</span></div>${salesMetricCards(sm25)}</div>`
     +`<div class="sales-block"><div class="sales-block-h">2026年销售项目<span class="yr-total">合计 <b>${sm26.累计}</b> 台 · ¥${shortMoney(yearAmt('2026'))}</span></div>${salesMetricCards(sm26)}</div>`
     +`</div>`;
+  const ps=(state.projects||[]);
+  h+=`<div class="yr-card proj-ov"><div class="yr-head"><h3>项目推进概览</h3><span class="yr-total">共 ${ps.length} 个</span></div>`;
+  if(!ps.length){h+=`<div class="empty" style="padding:20px">暂无项目推进记录。</div>`;}
+  else{
+    h+=`<ul class="proj-mini">`;
+    ps.forEach(p=>{
+      const qty=p.采购数量?`${p.采购数量}台`:'—';
+      const idx=PROJ_STAGES.indexOf(p.项目进度);
+      const cls=idx<0?'tag-gray':(idx===PROJ_STAGES.length-1?'tag-green':(idx>=PROJ_STAGES.length-2?'tag-amber':'tag-blue'));
+      h+=`<li><span class="pn" title="${escapeHtml(p.项目名称||'')}">${escapeHtml(p.项目名称||'（未命名）')}</span><span class="pq">${qty}</span><span class="pt">${t(p.项目进度||'—',cls)}</span></li>`;
+    });
+    h+=`</ul>`;
+  }
+  h+=`</div>`;
+  h+=`</div>`;
   // 图表（保留：客户类型销量分布 / 项目阶段分布）— 均按新销售口径
   const smAll=salesMetrics(null);
   const donutItems=CUST_TYPES.map((k,i)=>({label:k,value:smAll[k]||0,color:PALETTE[i%PALETTE.length]})).filter(x=>x.value>0);
