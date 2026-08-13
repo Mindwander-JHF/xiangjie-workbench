@@ -119,6 +119,10 @@
   .tag-green{background:#f0fdf4;color:#16a34a}
   .tag-gray{background:#f1f5f9;color:#64748b}
   .tag-red{background:#fef2f2;color:#dc2626}
+.tag-purple{background:#faf5ff;color:#9333ea}
+.tag-cyan{background:#ecfeff;color:#0891b2}
+.tag-teal{background:#f0fdfa;color:#0d9488}
+.tag-orange{background:#fff7ed;color:#ea580c}
   .code-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
   .code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;background:#f8fafc;border:1px solid var(--line);border-radius:6px;padding:3px 7px;color:#334155;overflow-wrap:anywhere}
   /* stage / progress */
@@ -355,6 +359,7 @@ function appConfirm(msg,onYes,danger){
 const PROJ_STAGES=['客户对接','招采流程','立项审批','合同签署','订单审批','要车排产','车辆交付'];
 const SALES_MODELS=['享界S9','享界S9T','享界G9','享界V8'];
 const SALES_POLICIES=['通用','公务','特殊','行业'];
+const SALES_STATUS=['客户对接','招采流程','立项审批','合同签署','订单审批','要车排产','车辆交付','交付闭环'];
 const MODULES={
   policies:{label:'政策管理',fields:[
     {key:'政策名称',label:'政策名称',type:'text',required:true},
@@ -473,6 +478,7 @@ const CUST={
     {key:'分担预算',label:'分担预算(¥)',type:'number'},
     {key:'交付中心',label:'交付中心',type:'text'},
     {key:'政策',label:'政策',type:'select',options:SALES_POLICIES},
+    {key:'销售状态',label:'销售状态',type:'select',options:SALES_STATUS},
     {key:'备注',label:'备注',type:'textarea'}
   ]}
 };
@@ -502,6 +508,7 @@ function pre(val){if(!val)return '';return `<div class="meta pre">${escapeHtml(v
 function codeChips(it){const arr=[];if(it.华为SKU)arr.push(['华为SKU',it.华为SKU]);if(it.中邮编码)arr.push(['中邮',it.中邮编码]);if(it.工厂整编码)arr.push(['工厂',it.工厂整编码]);return arr.length?`<div class="code-row">`+arr.map(([k,v])=>`<span class="code">${k}:${escapeHtml(v)}</span>`).join('')+`</div>`:'';}
 function tagType(typ){const m={'政府采购':'tag-red','国企客户':'tag-amber','央企客户':'tag-blue','集团客户':'tag-purple','事业单位':'tag-green','企业客户':'tag-blue','行业客户':'tag-gray'};return m[typ]||'tag-gray';}
 function tagPolicy(p){const m={'通用':'tag-blue','公务':'tag-amber','特殊':'tag-purple','行业':'tag-green'};return m[p]||'tag-gray';}
+function tagStatus(st){const m={'客户对接':'tag-blue','招采流程':'tag-cyan','立项审批':'tag-amber','合同签署':'tag-purple','订单审批':'tag-teal','要车排产':'tag-orange','车辆交付':'tag-green','交付闭环':'tag-red'};return m[st]||'tag-gray';}
 function tagStatus(s){const m={'跟进中':'tag-blue','已转化':'tag-green','已搁置':'tag-gray','筹备中':'tag-blue','进行中':'tag-amber','已完成':'tag-green','暂缓':'tag-gray','在库':'tag-green','外出':'tag-amber','已处置':'tag-gray','中标':'tag-green','未中标':'tag-red','待定':'tag-gray','普通销售政策':'tag-blue','特殊销售政策':'tag-amber','通用销售政策':'tag-blue','公务销售政策':'tag-amber','行业销售政策':'tag-green'};return m[s]||'tag-blue';}
 function tagLevel(l){return l==='A'?'tag-red':l==='B'?'tag-amber':'tag-gray';}
 function fmtDateCN(s){if(!s)return '';const m=String(s).match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);if(!m)return s;return m[1]+'年'+Number(m[2])+'月'+Number(m[3])+'日';}
@@ -997,12 +1004,14 @@ function renderSales(){
   const dv={};CUST_TYPES.forEach(ty=>dv[ty]={cust:new Set(),qty:0});
   rows.forEach(r=>{const ty=normalizeType(r.客户类型);if(!(ty in dv))return;const nm=r.客户简称||r.采购上牌公司||r.客户名称||'';if(nm)dv[ty].cust.add(nm);dv[ty].qty+=Number(r.数量||r.销量||r.采购数量||0);});
   const lbl=ty=>ty;
-  h+=salesBanner('客户数量',CUST_TYPES.map(ty=>({label:lbl(ty),val:dv[ty].cust.size,unit:'家'})));
-  h+=salesBanner('销售数量',CUST_TYPES.map(ty=>({label:lbl(ty),val:dv[ty].qty,unit:'台'})));
+  const totalCust=CUST_TYPES.reduce((a,ty)=>a+dv[ty].cust.size,0);
+  const totalQty=CUST_TYPES.reduce((a,ty)=>a+dv[ty].qty,0);
+  h+=salesBanner('客户数量',CUST_TYPES.map(ty=>({label:lbl(ty),val:dv[ty].cust.size,unit:'家'})).concat([{label:'总量',val:totalCust,unit:'家'}]));
+  h+=salesBanner('销售数量',CUST_TYPES.map(ty=>({label:lbl(ty),val:dv[ty].qty,unit:'台'})).concat([{label:'总量',val:totalQty,unit:'台'}]));
   const modelOpts=[...new Set(rows.map(r=>r.采购车型).filter(Boolean))];
   const versionOpts=[...new Set(rows.map(r=>r.车型版本).filter(Boolean))];
   const centerOpts=[...new Set(rows.map(r=>r.交付中心).filter(Boolean))];
-  h+=`<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:6px 0 12px">`+salesFilterSelect('年度','pur#年度',state.purchaseYears||[])+salesFilterSelect('客户类型','pur#客户类型',CUST_TYPES)+salesFilterSelect('采购车型','pur#采购车型',modelOpts)+salesFilterSelect('车型版本','pur#车型版本',versionOpts)+salesFilterSelect('交付中心','pur#交付中心',centerOpts)+salesFilterSelect('政策','pur#政策',SALES_POLICIES)+`</div>`;
+  h+=`<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:6px 0 12px">`+salesFilterSelect('年度','pur#年度',state.purchaseYears||[])+salesFilterSelect('客户类型','pur#客户类型',CUST_TYPES)+salesFilterSelect('采购车型','pur#采购车型',modelOpts)+salesFilterSelect('车型版本','pur#车型版本',versionOpts)+salesFilterSelect('交付中心','pur#交付中心',centerOpts)+salesFilterSelect('政策','pur#政策',SALES_POLICIES)+salesFilterSelect('销售状态','pur#销售状态',SALES_STATUS)+`</div>`;
   let items=rows.slice();
   if(F['pur#年度'])items=items.filter(x=>x.年度===F['pur#年度']);
   if(F['pur#客户类型'])items=items.filter(x=>x.客户类型===F['pur#客户类型']);
@@ -1010,14 +1019,15 @@ function renderSales(){
   if(F['pur#车型版本'])items=items.filter(x=>x.车型版本===F['pur#车型版本']);
   if(F['pur#交付中心'])items=items.filter(x=>x.交付中心===F['pur#交付中心']);
   if(F['pur#政策'])items=items.filter(x=>x.政策===F['pur#政策']);
+  if(F['pur#销售状态'])items=items.filter(x=>x.销售状态===F['pur#销售状态']);
   if(!items.length){h+=`<div class="empty">${rows.length?'当前筛选无匹配记录。':'暂无数据，点击上方「+ 新增」或「上传数据」添加。'}</div>`;return h;}
   let qtySum=0;
-  h+=`<div class="tbl-wrap"><table class="tbl sales-tbl"><thead><tr><th style="width:6%">年度</th><th style="width:14%">采购/上牌公司名称</th><th style="width:14%">用车公司名称</th><th style="width:5%">客户简称</th><th style="width:5%">客户类型</th><th style="width:6%">采购车型</th><th style="width:7%">车型版本</th><th style="width:4%">数量</th><th style="width:11%">车架号</th><th style="width:5%">开票金额</th><th style="width:5%">分担预算</th><th style="width:7%">交付中心</th><th style="width:6%">政策</th><th style="width:5%">操作</th></tr></thead><tbody>`;
+  h+=`<div class="tbl-wrap"><table class="tbl sales-tbl"><thead><tr><th style="width:4%">年度</th><th style="width:14%">采购/上牌公司名称</th><th style="width:14%">用车公司名称</th><th style="width:5%">客户简称</th><th style="width:5%">客户类型</th><th style="width:6%">采购车型</th><th style="width:7%">车型版本</th><th style="width:3%">数量</th><th style="width:11%">车架号</th><th style="width:5%">开票金额</th><th style="width:5%">分担预算</th><th style="width:7%">交付中心</th><th style="width:4%">政策</th><th style="width:5%">销售状态</th><th style="width:5%">操作</th></tr></thead><tbody>`;
   items.forEach(it=>{
     const q=Number(it.数量||it.销量||it.采购数量||0);qtySum+=q;
-    h+=`<tr><td>${escapeHtml(it.年度||'')}</td><td>${escapeHtml(it.采购上牌公司||it.客户名称||'')}</td><td>${escapeHtml(it.用车公司||'')}</td><td>${escapeHtml(it.客户简称||it.客户名称||'')}</td><td>${t(it.客户类型,tagType(it.客户类型))}</td><td>${escapeHtml(it.采购车型||'')}</td><td>${escapeHtml(it.车型版本||'')}</td><td>${q}</td><td>${escapeHtml(it.车架号||'')}</td><td>${fmtMoney(it.开票金额||it.销售价格)}</td><td>${fmtMoney(it.分担预算||it.预算金额)}</td><td>${escapeHtml(it.交付中心||'')}</td><td>${t(it.政策||'',tagPolicy(it.政策||''))}</td><td><span class="op"><button class="link" onclick="editCust('purchaseCustomers','${it.id}')">编辑</button><button class="link danger" onclick="delCust('purchaseCustomers','${it.id}')">删除</button></span></td></tr>`;
+    h+=`<tr><td>${escapeHtml(it.年度||'')}</td><td>${escapeHtml(it.采购上牌公司||it.客户名称||'')}</td><td>${escapeHtml(it.用车公司||'')}</td><td>${escapeHtml(it.客户简称||it.客户名称||'')}</td><td>${t(it.客户类型,tagType(it.客户类型))}</td><td>${escapeHtml(it.采购车型||'')}</td><td>${escapeHtml(it.车型版本||'')}</td><td>${q}</td><td>${escapeHtml(it.车架号||'')}</td><td>${fmtMoney(it.开票金额||it.销售价格)}</td><td>${fmtMoney(it.分担预算||it.预算金额)}</td><td>${escapeHtml(it.交付中心||'')}</td><td>${t(it.政策||'',tagPolicy(it.政策||''))}</td><td>${t(it.销售状态||'',tagStatus(it.销售状态||''))}</td><td><span class="op"><button class="link" onclick="editCust('purchaseCustomers','${it.id}')">编辑</button><button class="link danger" onclick="delCust('purchaseCustomers','${it.id}')">删除</button></span></td></tr>`;
   });
-  h+=`<tr style="font-weight:700;background:#f8fafc"><td colspan="7" style="text-align:right">合计（本筛选）</td><td>${qtySum}</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
+  h+=`<tr style="font-weight:700;background:#f8fafc"><td colspan="7" style="text-align:right">合计（本筛选）</td><td>${qtySum}</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
   h+=`</tbody></table></div>`;
   return h;
 }
