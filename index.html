@@ -389,7 +389,7 @@ const MODULES={
   projects:{label:'项目推进',fields:[
     {key:'项目名称',label:'项目名称',type:'text',required:true},
     {key:'客户名称',label:'客户名称',type:'text'},
-    {key:'客户类型',label:'客户类型',type:'select',optionsKey:'customerTypes',addable:true},
+    {key:'客户类型',label:'客户类型',type:'select',options:CUST_TYPES,addable:false},
     {key:'采购车型',label:'采购车型',type:'text'},
     {key:'采购数量',label:'采购数量(台)',type:'number'},
     {key:'采购形式',label:'采购形式',type:'select',options:['直接采购','公开招标','邀请招标','竞争性谈判','单一来源','框架协议','其他']},
@@ -440,7 +440,7 @@ const MODULES={
 const CUST={
   customerLib:{label:'客户信息总库',fields:[
     {key:'客户名称',label:'客户名称',type:'text',required:true},
-    {key:'客户类型',label:'客户类型',type:'select',optionsKey:'customerTypes',addable:true},
+    {key:'客户类型',label:'客户类型',type:'select',options:CUST_TYPES,addable:false},
     {key:'行业',label:'行业',type:'text'},
     {key:'联系人',label:'联系人',type:'text'},
     {key:'联系电话',label:'联系电话',type:'text'},
@@ -449,7 +449,7 @@ const CUST={
   ]},
   intentCustomers:{label:'意向客户库',fields:[
     {key:'客户名称',label:'客户名称',type:'text',required:true},
-    {key:'客户类型',label:'客户类型',type:'select',optionsKey:'customerTypes',addable:true},
+    {key:'客户类型',label:'客户类型',type:'select',options:CUST_TYPES,addable:false},
     {key:'意向采购车型',label:'意向采购车型',type:'select',options:modelNames},
     {key:'采购数量',label:'采购数量',type:'number'},
     {key:'预计采购时间',label:'预计采购时间',type:'date'},
@@ -461,7 +461,7 @@ const CUST={
     {key:'采购上牌公司',label:'采购/上牌公司名称',type:'text',required:true},
     {key:'用车公司',label:'用车公司名称',type:'text'},
     {key:'客户简称',label:'客户简称',type:'text'},
-    {key:'客户类型',label:'客户类型',type:'select',optionsKey:'customerTypes',addable:true},
+    {key:'客户类型',label:'客户类型',type:'select',options:CUST_TYPES,addable:false},
     {key:'车型版本',label:'车型版本',type:'text'},
     {key:'车架号',label:'车架号(VIN)',type:'text'},
     {key:'数量',label:'数量(台)',type:'number',def:'1'},
