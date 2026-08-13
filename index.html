@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>享界政企大客户工作台</title>
+<style>
+  :root{
+    --primary:#2563EB; --primary-d:#1d4ed8; --navy:#1f2a44; --navy2:#27344f;
+    --bg:#eef1f6; --card:#ffffff; --line:#e3e8ef; --text:#1f2937; --sub:#6b7280;
+    --red:#dc2626; --green:#16a34a; --amber:#d97706; --chip:#eef2ff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  html,body{overflow-x:hidden}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-text-size-adjust:100%}
+  .app{display:flex;min-height:100vh}
+  /* sidebar */
+  .sidebar{width:232px;background:var(--navy);color:#fff;flex-shrink:0;display:flex;flex-direction:column}
+  .brand{padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .brand h1{font-size:16px;font-weight:700;letter-spacing:.5px}
+  .brand p{font-size:11px;color:#9aa6c0;margin-top:3px}
+  .nav{flex:1;overflow-y:auto;padding:8px 0}
+  .nav-item{display:flex;align-items:center;gap:11px;padding:11px 18px;cursor:pointer;color:#c4cde0;font-size:13.5px;border-left:3px solid transparent;user-select:none}
+  .nav-item:hover{background:var(--navy2);color:#fff}
+  .nav-item.active{background:var(--navy2);color:#fff;border-left-color:var(--primary)}
+  .nav-item svg{width:18px;height:18px;flex-shrink:0}
+  .nav-foot{padding:12px 16px;font-size:11px;color:#7a86a3;border-top:1px solid rgba(255,255,255,.08)}
+  /* main */
+  .main{flex:1;display:flex;flex-direction:column;min-width:0}
+  .topbar{background:var(--card);border-bottom:1px solid var(--line);padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:20}
+  .topbar .hamb{display:none;background:none;border:none;color:var(--text);cursor:pointer;padding:4px}
+  .topbar .title{font-size:15px;font-weight:700;margin-right:auto}
+  .today-badge{font-size:12px;padding:3px 10px;border-radius:20px;background:var(--chip);color:var(--primary);font-weight:600}
+  .today-badge.warn{background:#fef2f2;color:var(--red)}
+  .btn{border:none;border-radius:8px;padding:8px 13px;font-size:13px;cursor:pointer;font-weight:600;white-space:nowrap}
+  .btn-primary{background:var(--primary);color:#fff}
+  .btn-primary:hover{background:var(--primary-d)}
+  .btn-ghost{background:#f1f5f9;color:var(--text)}
+  .btn-ghost:hover{background:#e2e8f0}
+  .btn-mini{background:var(--chip);color:var(--primary);border:none;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:600}
+  .btn-mini:hover{background:#e0e7ff}
+  .btn-danger{background:#fef2f2;color:var(--red)}
+  .link{border:none;background:none;color:var(--primary);cursor:pointer;font-size:12.5px;font-weight:600;padding:2px 4px}
+  .link:hover{text-decoration:underline}
+  .link.danger{color:var(--red)}
+  .view{padding:18px;flex:1;min-width:0}
+  .view-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+  .view-head h2{font-size:18px}
+  .hint{background:#fffbeb;border:1px solid #fde68a;color:var(--amber);font-size:12.5px;padding:8px 12px;border-radius:8px;margin-bottom:14px}
+  /* KPI + dashboard */
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 1px 2px rgba(0,0,0,.03);min-width:0}
+  .kpi-title{font-size:13px;font-weight:700;color:var(--text)}
+  .kpi-main{display:flex;align-items:center;gap:10px;min-width:0}
+  .kpi-ico{width:40px;height:40px;border-radius:10px;background:var(--chip);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .kpi-ico svg{width:20px;height:20px}
+  .kpi-n{font-size:22px;font-weight:800;line-height:1.1;word-break:break-all}
+  .kpi-sub{font-size:11px;color:var(--sub)}
+  /* 销量概览 / 年度销售项目：紧凑单行卡片（手机端优先） */
+  .sales-row{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:6px;padding-bottom:5px;scrollbar-width:thin}
+  .sales-row::-webkit-scrollbar{height:5px}
+  .sales-row::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+  .scard{flex:0 0 auto;min-width:0;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 11px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  .scard .n{font-size:17px;font-weight:800;line-height:1.15;color:var(--text);white-space:nowrap}
+  .scard .n span{font-size:10px;color:var(--sub);font-weight:600}
+  .scard .l{font-size:10.5px;color:var(--sub);margin-top:2px;white-space:nowrap}
+  .sales-block{margin-top:14px}
+  .sales-block:first-of-type{margin-top:6px}
+  .sales-block-h{font-size:13px;font-weight:700;color:var(--text);margin:0 0 6px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .sales-row.overview .scard .n{font-size:19px}
+  .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:18px}
+  .chart-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:0 1px 2px rgba(0,0,0,.03);min-width:0}
+  .chart-card h4{font-size:13.5px;margin-bottom:10px;color:var(--text)}
+  .chart{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .legend{display:flex;flex-direction:column;gap:5px;font-size:12px}
+  .lg{display:flex;align-items:center;gap:6px}
+  .lg i{width:10px;height:10px;border-radius:3px;display:inline-block;flex-shrink:0}
+  .lg b{margin-left:auto;padding-left:10px}
+  .empty-chart{padding:24px;text-align:center;color:var(--sub);font-size:12.5px}
+  /* year panels */
+  .yr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-bottom:18px}
+  .yr-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.03);min-width:0}
+  .yr-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .yr-head h3{font-size:15px}
+  .yr-total{font-size:12.5px;color:var(--sub)}
+  .yr-total b{color:var(--primary);font-weight:800;font-size:15px}
+  .yr-chips{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0 4px}
+  .yr-chip{background:#eff6ff;color:#2563eb;border-radius:20px;padding:4px 11px;font-size:12px;font-weight:600;white-space:nowrap}
+  .yr-sub{font-size:12px;color:var(--sub);margin-top:6px}
+  /* today card */
+  .today-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  .today-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .today-head span:first-child{font-size:15px;font-weight:700}
+  .badge{font-size:12px;padding:3px 10px;border-radius:20px;font-weight:600}
+  .badge-warn{background:#fef2f2;color:var(--red)}
+  .badge-ok{background:#f0fdf4;color:var(--green)}
+  .today-list{list-style:none}
+  .today-list li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px dashed var(--line)}
+  .today-list li:first-child{border-top:none}
+  .today-list li.overdue .date{color:var(--red);font-weight:700}
+  .today-list .tag{display:inline-block;background:var(--chip);color:var(--primary);font-size:11px;padding:2px 8px;border-radius:6px;margin-right:6px}
+  .today-list .date{font-size:12px;color:var(--sub);margin-left:6px}
+  /* cards grid */
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+  .mcard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 15px;box-shadow:0 1px 2px rgba(0,0,0,.03);display:flex;flex-direction:column;gap:7px;min-width:0;overflow:hidden}
+  .mcard:hover{border-color:var(--primary)}
+  .mcard h3{font-size:15px;margin-bottom:2px;line-height:1.35;word-break:break-word}
+  .mcard .meta{font-size:12.5px;color:var(--sub);word-break:break-word}
+  .mcard .meta b{color:var(--text);font-weight:600}
+  .mcard .meta.pre{white-space:pre-wrap;line-height:1.6;background:#f8fafc;border-radius:8px;padding:8px 10px;margin-top:2px;overflow-wrap:anywhere}
+  .mcard-foot{display:flex;gap:12px;margin-top:6px;padding-top:9px;border-top:1px dashed var(--line)}
+  /* tags / chips / codes */
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11.5px;font-weight:600}
+  .tag-blue{background:#eff6ff;color:#2563eb}
+  .tag-amber{background:#fffbeb;color:#d97706}
+  .tag-green{background:#f0fdf4;color:#16a34a}
+  .tag-gray{background:#f1f5f9;color:#64748b}
+  .tag-red{background:#fef2f2;color:#dc2626}
+  .code-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+  .code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;background:#f8fafc;border:1px solid var(--line);border-radius:6px;padding:3px 7px;color:#334155;overflow-wrap:anywhere}
+  /* stage / progress */
+  .stage{margin-top:4px}
+  .stage-top{display:flex;justify-content:space-between;font-size:11.5px;color:var(--sub);margin-bottom:4px}
+  .bar{height:8px;background:#eef2f7;border-radius:6px;overflow:hidden}
+  .bar > i{display:block;height:100%;border-radius:6px}
+  /* stepper */
+  .stepper{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .stage-pill{display:flex;align-items:center;gap:5px;padding:5px 9px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid var(--line);background:#f8fafc;color:var(--sub);user-select:none;white-space:nowrap}
+  .stage-pill .dot{width:14px;height:14px;border-radius:50%;background:#cbd5e1;color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .stage-pill.done{background:#f0fdf4;border-color:#bbf7d0;color:var(--green)}
+  .stage-pill.done .dot{background:var(--green)}
+  .stage-pill.cur{background:#eff6ff;border-color:var(--primary);color:var(--primary);font-weight:700}
+  .stage-pill.cur .dot{background:var(--primary)}
+  .stage-pill:hover{border-color:var(--primary)}
+  /* slicer */
+  .slicer{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .slicer .sl-label{font-size:12.5px;color:var(--sub)}
+  .slicer select,.slicer input{padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;max-width:100%}
+  /* tabs */
+  .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+  .tab{padding:8px 14px;border-radius:8px;background:#fff;border:1px solid var(--line);cursor:pointer;font-size:13px;font-weight:600;color:var(--sub)}
+  .tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .sum-strip{display:flex;gap:18px;flex-wrap:wrap;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:12px 0;font-size:13px;color:var(--sub)}
+  .sum-strip b{color:var(--text);font-weight:700;margin-left:4px}
+  .empty{padding:40px;text-align:center;color:var(--sub);background:var(--card);border:1px dashed var(--line);border-radius:12px}
+  /* table */
+  .tbl-wrap{overflow-x:auto;margin-top:4px;-webkit-overflow-scrolling:touch}
+  table.tbl{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:13px;min-width:680px}
+  table.tbl th{background:#f8fafc;text-align:left;padding:11px 12px;font-size:12.5px;color:var(--sub);border-bottom:1px solid var(--line);white-space:nowrap;font-weight:700;position:sticky;top:0}
+  table.tbl td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;word-break:break-word}
+  table.tbl tr:last-child td{border-bottom:none}
+  table.tbl tr:hover td{background:#f8fafc}
+  .op{display:flex;gap:10px;flex-wrap:nowrap}
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:24px 12px;overflow-y:auto;overflow-x:hidden}
+  .overlay.show{display:flex}
+  .modal{background:#fff;border-radius:14px;width:100%;max-width:1400px;margin:auto;box-shadow:0 20px 50px rgba(0,0,0,.25);max-height:92vh;display:flex;flex-direction:column}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line);font-weight:700;font-size:15px;flex-shrink:0}
+  .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--sub);line-height:1}
+  .modal-body{padding:16px 18px;overflow-y:auto}
+  .modal-foot{padding:14px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0}
+  .form-row{margin-bottom:13px}
+  .form-row label{display:block;font-size:12.5px;color:var(--sub);margin-bottom:5px;font-weight:600}
+  .form-row .req{color:var(--red)}
+  .form-row input,.form-row select,.form-row textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit;background:#fff;color:var(--text);max-width:100%}
+  .form-row textarea{resize:vertical;min-height:96px}
+  .form-row input:focus,.form-row select:focus,.form-row textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .section-head{font-size:12px;font-weight:700;color:var(--primary);letter-spacing:.5px;margin:14px 0 8px;padding-left:9px;border-left:3px solid var(--primary)}
+  .checks{display:flex;flex-wrap:wrap;gap:8px 16px;padding:4px 0}
+  .chk{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:var(--text);cursor:pointer}
+  .chk input{width:16px;height:16px;accent-color:var(--primary);cursor:pointer}
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:#1f2937;color:#fff;padding:11px 18px;border-radius:10px;font-size:13.5px;opacity:0;pointer-events:none;transition:.25s;z-index:200;max-width:90vw}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  /* drawer (mobile) */
+  .mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40}
+  .mask.show{display:block}
+  /* 开拓保障：上下两块 */
+  .submod{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.03);min-width:0}
+  .submod-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:10px;flex-wrap:wrap}
+  .submod-head h3{font-size:16px}
+  @media(max-width:768px){
+    .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);transition:.25s}
+    .sidebar.open{transform:translateX(0)}
+    .topbar .hamb{display:block}
+    .topbar .title{font-size:14px}
+    .btn{padding:7px 11px;font-size:12.5px}
+    .view{padding:14px}
+    .kpi-grid{grid-template-columns:repeat(2,1fr)}
+    .card-grid{grid-template-columns:1fr}
+    .yr-grid{grid-template-columns:1fr}
+  }
+
+/* 销售明细表：固定布局按比例列宽 */
+.sales-tbl{table-layout:fixed}
+.sales-tbl td,.sales-tbl th{word-break:break-all;word-wrap:break-word}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <h1>享界政企大客户工作台</h1>
+      <p>STELATO · 政企销售管理中枢</p>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="nav-foot">数据存于本机浏览器 · 建议定期导出备份</div>
+  </aside>
+  <div class="mask" id="mask" onclick="closeDrawer()"></div>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="hamb" onclick="toggleDrawer()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+      <span class="title" id="topTitle">首页</span>
+      <span class="today-badge" id="todayBadge">0 项待处理</span>
+      <button class="btn btn-ghost" onclick="openSync()">云同步</button>
+      <button class="btn btn-ghost" onclick="exportData()">导出JSON</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('fileInput').click()">导入恢复</button>
+      <button class="btn btn-ghost" onclick="restoreSamples()">恢复示例</button>
+      <button class="btn btn-danger" onclick="clearAll()">清空数据</button>
+      <input type="file" id="fileInput" accept="application/json" style="display:none" onchange="importData(this.files[0])">
+    </div>
+    <div class="view" id="view"></div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"><div id="modalBox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ 基础工具 ============ */
+const PREFIX='wb_xiangjie_';
+const PALETTE=['#2563eb','#16a34a','#d97706','#dc2626','#7c3aed','#0891b2','#db2777','#65a30d','#ea580c','#0d9488'];
+const SALES_TARGET=100;            // 2026年销售目标（台）
+const BUDGET_TARGET=239.6;         // 年度预算（万元，含税）
+const CUST_TYPES=['政府采购','国企客户','央企客户','集团客户','事业单位','企业客户','行业客户'];
+const $=(id)=>document.getElementById(id);
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1900);}
+function download(filename,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:type||'application/json'}));a.download=filename;a.click();URL.revokeObjectURL(a.href);}
+function parseDate(s){if(!s)return null;const p=s.split('-');if(p.length<3)return null;return new Date(+p[0],+p[1]-1,+p[2]);}
+function todayStr(){const d=new Date();const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
+function daysUntil(s){const d=parseDate(s);if(!d)return null;const t=new Date();t.setHours(0,0,0,0);return Math.round((d-t)/86400000);}
+function daysBetween(a,b){const x=parseDate(a),y=parseDate(b);if(!x||!y)return 0;return Math.round((y-x)/86400000);}
+function fmtMoney(n){return '¥'+(Number(n)||0).toLocaleString();}
+function shortMoney(n){n=Number(n)||0;if(n>=10000)return (n/10000).toFixed(n%10000?1:0)+'万';return n.toLocaleString();}
+function cdHtml(s){const n=daysUntil(s);if(n===null)return '';if(n>0)return `<span class="tag tag-blue">剩${n}天</span>`;if(n===0)return `<span class="tag tag-amber">今天</span>`;return `<span class="tag tag-red">逾期${-n}天</span>`;}
+
+/* ============ 状态与存储 ============ */
+const STORE_KEYS=['policies','models','developments','customerLib','intentCustomers','purchaseCustomers','projects','events','keyProjects','processes','bidDocs','bidProjects','vehicles','customerTypes','purchaseYears','processCats','bidDocCats'];
+const DEFAULTS={
+  customerTypes:['政府采购','国企客户','央企客户','集团客户','事业单位','企业客户','行业客户'],
+  purchaseYears:['2025','2026'],
+  processCats:['大客户销售流程(华为)','大客户销售流程(北汽新能源)','上会审批(北汽新能源)'],
+  bidDocCats:['资质文件','业绩案例','技术方案','报价模板','其他']
+};
+let state={};
+let F={};
+function save(key){localStorage.setItem(PREFIX+key,JSON.stringify(state[key]||[]));}
+function loadAll(){
+  STORE_KEYS.forEach(k=>{const raw=localStorage.getItem(PREFIX+k);state[k]=raw?JSON.parse(raw):[];});
+  Object.keys(DEFAULTS).forEach(k=>{if(!state[k]||!state[k].length)state[k]=DEFAULTS[k].slice();});
+}
+function totalCount(){let n=0;['policies','models','developments','customerLib','intentCustomers','purchaseCustomers','projects','events','keyProjects','processes','bidDocs','bidProjects','vehicles'].forEach(k=>n+=(state[k]||[]).length);return n;}
+
+/* ============ 动态选项 ============ */
+function modelNames(){return (state.models||[]).map(m=>m.车型名称).filter(Boolean);}
+function policyNames(){return (state.policies||[]).map(p=>p.政策名称).filter(Boolean);}
+function resolveOptions(f){
+  if(typeof f.options==='function')return f.options();
+  if(f.optionsKey)return state[f.optionsKey]||[];
+  if(Array.isArray(f.options))return f.options;
+  return [];
+}
+function addOption(stateKey,selId){
+  const v=prompt('输入新分类名称：');
+  if(!v||!v.trim())return;
+  if(!state[stateKey])state[stateKey]=[];
+  if(!state[stateKey].includes(v.trim())){state[stateKey].push(v.trim());save(stateKey);}
+  const sel=$(selId);const cur=sel.value;
+  sel.innerHTML=state[stateKey].map(o=>`<option value="${escapeHtml(o)}" ${o===cur?'selected':''}>${escapeHtml(o)}</option>`).join('');
+  toast('已添加：'+v.trim());
+}
+
+/* ============ 通用表单弹窗 ============ */
+function fieldHtml(f,val){
+  val=val==null?'':val;
+  let h=`<div class="form-row"><label>${escapeHtml(f.label)}${f.required?' <span class="req">*</span>':''}</label>`;
+  if(f.type==='textarea'){
+    h+=`<textarea id="fld_${f.key}" rows="3" placeholder="${escapeHtml(f.placeholder||'')}">${escapeHtml(val)}</textarea>`;
+  }else if(f.type==='select'){
+    let opts=resolveOptions(f);
+    if(f.multi){
+      const sel=(val?val.toString().split(',').map(s=>s.trim()).filter(Boolean):[]);
+      h+=`<div class="checks">`+opts.map(o=>`<label class="chk"><input type="checkbox" class="fld_multi_${f.key}" value="${escapeHtml(o)}" ${sel.includes(o)?'checked':''}> ${escapeHtml(o)}</label>`).join('')+`</div>`;
+    }else{
+      if(val&&!opts.includes(val))opts=[val].concat(opts);
+      h+=`<select id="fld_${f.key}">`+opts.map(o=>`<option value="${escapeHtml(o)}" ${(o===val||(val===''&&o===f.def))?'selected':''}>${escapeHtml(o)}</option>`).join('')+`</select>`;
+      if(f.addable)h+=` <button type="button" class="btn-mini" onclick="addOption('${f.optionsKey}','fld_${f.key}')">+ 新增</button>`;
+    }
+  }else{
+    const t=f.type==='number'?'number':(f.type==='date'?'date':'text');
+    h+=`<input id="fld_${f.key}" type="${t}" value="${escapeHtml(val)}" placeholder="${escapeHtml(f.placeholder||'')}">`;
+  }
+  h+=`</div>`;
+  return h;
+}
+function openForm(cfg){
+  const box=$('modalBox');
+  let html=`<div class="modal"><div class="modal-head"><span>${escapeHtml(cfg.title)}</span><button class="modal-close" onclick="closeModal()">&times;</button></div><div class="modal-body">`;
+  let lastSection='';
+  cfg.fields.forEach(f=>{
+    if(f.section&&f.section!==lastSection){html+=`<div class="section-head">${escapeHtml(f.section)}</div>`;lastSection=f.section;}
+    html+=fieldHtml(f,cfg.values?cfg.values[f.key]:'');
+  });
+  html+=`</div><div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-primary" id="modalSubmit">${cfg.submitText||'保存'}</button></div></div>`;
+  box.innerHTML=html;
+  $('overlay').classList.add('show');
+  document.body.style.overflow='hidden';
+  $('modalSubmit').onclick=()=>{
+    const v={};
+    for(const f of cfg.fields){
+      if(f.multi){
+        const els=document.getElementsByClassName('fld_multi_'+f.key);
+        const vals=Array.from(els).filter(e=>e.checked).map(e=>e.value).join(',');
+        if(f.required&&!vals){toast('请选择：'+f.label);return;}
+        v[f.key]=vals;continue;
+      }
+      const el=$('fld_'+f.key);const val=el?el.value.trim():'';
+      if(f.required&&!val){toast('请填写：'+f.label);return;}
+      v[f.key]=val;
+    }
+    cfg.onSubmit(v);closeModal();
+  };
+}
+function closeModal(){$('overlay').classList.remove('show');$('modalBox').innerHTML='';document.body.style.overflow='';}
+/* 自定义确认框：替代被内嵌浏览器拦截的原生 confirm() */
+function appConfirm(msg,onYes,danger){
+  const box=$('modalBox');
+  const cid='confirmYes_'+uid();
+  box.innerHTML=`<div class="modal"><div class="modal-head"><span>请确认</span><button class="modal-close" onclick="closeModal()">&times;</button></div><div class="modal-body"><p style="margin:4px 0 2px;line-height:1.6">${escapeHtml(msg)}</p></div><div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn ${danger?'btn-danger':'btn-primary'}" id="${cid}">确定</button></div></div>`;
+  $('overlay').classList.add('show');
+  document.body.style.overflow='hidden';
+  $(cid).onclick=()=>{closeModal();onYes&&onYes();};
+}
+
+/* ============ 模块字段定义（用于新增/编辑表单） ============ */
+const PROJ_STAGES=['客户对接','招采流程','立项审批','合同签署','订单审批','要车排产','车辆交付'];
+const MODULES={
+  policies:{label:'政策管理',fields:[
+    {key:'政策名称',label:'政策名称',type:'text',required:true},
+    {key:'适用车型',label:'适用车系（可多选）',type:'select',options:modelNames,multi:true},
+    {key:'政策类型',label:'政策类型',type:'select',options:['通用销售政策','公务销售政策','行业销售政策']},
+    {key:'政策要点',label:'政策要点',type:'textarea'},
+    {key:'华为SKU',label:'华为SKU',type:'text',section:'车型信息'},
+    {key:'工厂整编码',label:'工厂整编码',type:'text',section:'车型信息'},
+    {key:'销售权益',label:'销售权益',type:'textarea',section:'销售权益'},
+    {key:'备注',label:'备注',type:'textarea'}
+  ]},
+  models:{label:'车型管理',fields:[
+    {key:'车型名称',label:'车型名称',type:'text',required:true},
+    {key:'车型类别',label:'车型类别',type:'select',options:['通用车型','指定车型','特殊车型']},
+    {key:'华为SKU',label:'华为SKU',type:'text',required:true},
+    {key:'中邮编码',label:'中邮编码',type:'text',required:true},
+    {key:'工厂整编码',label:'工厂整编码',type:'text',required:true},
+    {key:'关联销售政策',label:'关联销售政策',type:'select',options:policyNames},
+    {key:'选配清单',label:'选配清单',type:'textarea'},
+    {key:'备注',label:'备注',type:'textarea'}
+  ]},
+  developments:{label:'客户开拓',fields:[
+    {key:'客户名称',label:'客户名称',type:'text',required:true},
+    {key:'开拓时间',label:'开拓时间',type:'date'},
+    {key:'对接人',label:'对接人',type:'text'},
+    {key:'对接人职务',label:'对接人职务',type:'text'},
+    {key:'开拓形式',label:'开拓形式',type:'select',options:['电话拜访','上门拜访','展会','转介绍','线上','其他']},
+    {key:'现有车辆保有量',label:'现有车辆保有量',type:'text'},
+    {key:'更换周期',label:'更换周期',type:'text'},
+    {key:'预计采购时间',label:'预计采购时间',type:'date'},
+    {key:'预计采购量',label:'预计采购量',type:'number'},
+    {key:'后续工作',label:'后续工作',type:'textarea'},
+    {key:'状态',label:'状态',type:'select',options:['跟进中','已转化','已搁置'],def:'跟进中'}
+  ]},
+  projects:{label:'项目推进',fields:[
+    {key:'项目名称',label:'项目名称',type:'text',required:true},
+    {key:'客户名称',label:'客户名称',type:'text'},
+    {key:'客户类型',label:'客户类型',type:'select',optionsKey:'customerTypes',addable:true},
+    {key:'采购车型',label:'采购车型',type:'text'},
+    {key:'采购数量',label:'采购数量(台)',type:'number'},
+    {key:'采购形式',label:'采购形式',type:'select',options:['直接采购','公开招标','邀请招标','竞争性谈判','单一来源','框架协议','其他']},
+    {key:'项目进度',label:'项目进度',type:'select',options:PROJ_STAGES},
+    {key:'阶段负责人',label:'阶段负责人',type:'text'},
+    {key:'立项启动日期',label:'立项启动日期',type:'date'},
+    {key:'交付日期',label:'交付日期',type:'date'},
+    {key:'备注',label:'备注',type:'textarea'}
+  ]},
+  events:{label:'活动保障',fields:[
+    {key:'活动名称',label:'活动名称',type:'text',required:true},
+    {key:'活动日期',label:'活动日期',type:'date'},
+    {key:'活动地点',label:'活动地点',type:'text'},
+    {key:'活动要求',label:'活动要求',type:'textarea'},
+    {key:'车辆需求',label:'车辆需求',type:'textarea'},
+    {key:'车辆数量',label:'车辆数量',type:'number'},
+    {key:'车辆来源',label:'车辆来源',type:'select',options:['试驾车','展车','借用','客户车辆']},
+    {key:'活动形式',label:'活动形式',type:'select',options:['试驾体验','车展','交车仪式','品鉴会','其他']},
+    {key:'状态',label:'状态',type:'select',options:['筹备中','进行中','已完成'],def:'筹备中'}
+  ]},
+  keyProjects:{label:'重点工作',fields:[
+    {key:'项目内容',label:'项目内容',type:'text',required:true},
+    {key:'项目时间',label:'项目时间',type:'date'},
+    {key:'项目要求',label:'项目要求',type:'textarea'},
+    {key:'交付物',label:'交付物',type:'textarea'},
+    {key:'负责人',label:'负责人',type:'text'},
+    {key:'状态',label:'状态',type:'select',options:['进行中','已完成','暂缓'],def:'进行中'}
+  ]},
+  processes:{label:'流程制度',fields:[
+    {key:'制度名称',label:'制度名称',type:'text',required:true},
+    {key:'制度分类',label:'制度分类',type:'select',optionsKey:'processCats',addable:true},
+    {key:'内容',label:'内容/步骤',type:'textarea',required:true},
+    {key:'更新日期',label:'更新日期',type:'date'}
+  ]},
+  vehicles:{label:'车辆管理',fields:[
+    {key:'车辆用途',label:'车辆用途',type:'select',options:['试驾车','展车']},
+    {key:'车型',label:'车型',type:'select',options:modelNames},
+    {key:'车牌号',label:'车牌号',type:'text'},
+    {key:'车架号',label:'车架号(VIN)',type:'text'},
+    {key:'车辆归属公司',label:'车辆归属公司',type:'text'},
+    {key:'租期',label:'租期(天)',type:'number'},
+    {key:'使用人',label:'使用人',type:'text'},
+    {key:'状态',label:'状态',type:'select',options:['在库','外出','已处置'],def:'在库'},
+    {key:'门店',label:'门店',type:'text'},
+    {key:'备注',label:'备注',type:'textarea'}
+  ]}
+};
+const CUST={
+  customerLib:{label:'客户信息总库',fields:[
+    {key:'客户名称',label:'客户名称',type:'text',required:true},
+    {key:'客户类型',label:'客户类型',type:'select',optionsKey:'customerTypes',addable:true},
+    {key:'行业',label:'行业',type:'text'},
+    {key:'联系人',label:'联系人',type:'text'},
+    {key:'联系电话',label:'联系电话',type:'text'},
+    {key:'地址',label:'地址',type:'text'},
+    {key:'备注',label:'备注',type:'textarea'}
+  ]},
+  intentCustomers:{label:'意向客户库',fields:[
+    {key:'客户名称',label:'客户名称',type:'text',required:true},
+    {key:'客户类型',label:'客户类型',type:'select',optionsKey:'customerTypes',addable:true},
+    {key:'意向采购车型',label:'意向采购车型',type:'select',options:modelNames},
+    {key:'采购数量',label:'采购数量',type:'number'},
+    {key:'预计采购时间',label:'预计采购时间',type:'date'},
+    {key:'意向级别',label:'意向级别',type:'select',options:['A','B','C']},
+    {key:'备注',label:'备注',type:'textarea'}
+  ]},
+  purchaseCustomers:{label:'订单销售明细',fields:[
+    {key:'年度',label:'年度',type:'select',optionsKey:'purchaseYears',addable:true},
+    {key:'采购上牌公司',label:'采购/上牌公司名称',type:'text',required:true},
+    {key:'用车公司',label:'用车公司名称',type:'text'},
+    {key:'客户简称',label:'客户简称',type:'text'},
+    {key:'客户类型',label:'客户类型',type:'select',optionsKey:'customerTypes',addable:true},
+    {key:'车型版本',label:'车型版本',type:'text'},
+    {key:'车架号',label:'车架号(VIN)',type:'text'},
+    {key:'数量',label:'数量(台)',type:'number',def:'1'},
+    {key:'开票金额',label:'开票金额(¥)',type:'number'},
+    {key:'分担预算',label:'分担预算(¥)',type:'number'},
+    {key:'交付中心',label:'交付中心',type:'text'},
+    {key:'备注',label:'备注',type:'textarea'}
+  ]}
+};
+const BID={
+  bidDocs:{fields:[
+    {key:'资料名称',label:'资料名称',type:'text',required:true},
+    {key:'资料类别',label:'资料类别',type:'select',optionsKey:'bidDocCats',addable:true},
+    {key:'说明',label:'说明',type:'textarea'},
+    {key:'更新日期',label:'更新日期',type:'date'}
+  ]},
+  bidProjects:{fields:[
+    {key:'项目名称',label:'项目名称',type:'text',required:true},
+    {key:'关联客户',label:'关联客户',type:'text'},
+    {key:'投标截止日期',label:'投标截止日期',type:'date'},
+    {key:'投标进度',label:'投标进度',type:'select',options:['报名','标书制作','递交','开标','中标']},
+    {key:'投标结果',label:'投标结果',type:'select',options:['待定','中标','未中标'],def:'待定'},
+    {key:'投标实施',label:'投标实施',type:'textarea'},
+    {key:'备注',label:'备注',type:'textarea'}
+  ]}
+};
+
+/* ============ 卡片/标签/进度 组件 ============ */
+function t(text,cls){if(!text)return '';return `<span class="tag ${cls}">${escapeHtml(text)}</span>`;}
+function tags(arr){const f=arr.filter(Boolean);return f.length?`<div class="chips">${f.join('')}</div>`:'';}
+function kv(label,val){if(val===undefined||val===null||val==='')return '';return `<div class="meta"><b>${escapeHtml(label)}：</b>${escapeHtml(String(val))}</div>`;}
+function pre(val){if(!val)return '';return `<div class="meta pre">${escapeHtml(val)}</div>`;}
+function codeChips(it){const arr=[];if(it.华为SKU)arr.push(['华为SKU',it.华为SKU]);if(it.中邮编码)arr.push(['中邮',it.中邮编码]);if(it.工厂整编码)arr.push(['工厂',it.工厂整编码]);return arr.length?`<div class="code-row">`+arr.map(([k,v])=>`<span class="code">${k}:${escapeHtml(v)}</span>`).join('')+`</div>`:'';}
+function tagType(typ){const m={'政府采购':'tag-red','国企客户':'tag-amber','央企客户':'tag-blue','集团客户':'tag-purple','事业单位':'tag-green','企业客户':'tag-blue','行业客户':'tag-gray'};return m[typ]||'tag-gray';}
+function tagStatus(s){const m={'跟进中':'tag-blue','已转化':'tag-green','已搁置':'tag-gray','筹备中':'tag-blue','进行中':'tag-amber','已完成':'tag-green','暂缓':'tag-gray','在库':'tag-green','外出':'tag-amber','已处置':'tag-gray','中标':'tag-green','未中标':'tag-red','待定':'tag-gray','普通销售政策':'tag-blue','特殊销售政策':'tag-amber','通用销售政策':'tag-blue','公务销售政策':'tag-amber','行业销售政策':'tag-green'};return m[s]||'tag-blue';}
+function tagLevel(l){return l==='A'?'tag-red':l==='B'?'tag-amber':'tag-gray';}
+function fmtDateCN(s){if(!s)return '';const m=String(s).match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);if(!m)return s;return m[1]+'年'+Number(m[2])+'月'+Number(m[3])+'日';}
+function remainDaysText(s){const n=daysUntil(s);if(n===null)return '';if(n>0)return n+'天';if(n===0)return '今天';return '逾期'+(-n)+'天';}
+function stageBar(stages,idx,color){
+  const pct=stages.length>1?Math.max(0,Math.min(100,Math.round(idx/(stages.length-1)*100))):0;
+  return `<div class="stage"><div class="stage-top"><span>${escapeHtml(stages[idx]||'')}</span><span>${idx+1}/${stages.length}</span></div><div class="bar"><i style="width:${pct}%;background:${color}"></i></div></div>`;
+}
+function mcard(title,blocks,footer,headerRight){
+  const hr=headerRight?`<span style="float:right;font-size:12px;font-weight:700;line-height:1.7">${headerRight}</span>`:'';
+  return `<div class="mcard"><h3>${hr}${escapeHtml(title)}</h3>${blocks.join('')}<div class="mcard-foot">${footer}</div></div>`;
+}
+const BID_STAGES=['报名','标书制作','递交','开标','中标'];
+
+/* SVG 图表 */
+function svgDonut(items){
+  const total=items.reduce((a,b)=>a+b.value,0)||1;
+  const r=52,cx=70,cy=70,circ=2*Math.PI*r;let off=0,parts='';
+  items.forEach(it=>{const frac=it.value/total;const len=frac*circ;parts+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${it.color}" stroke-width="18" stroke-dasharray="${len.toFixed(2)} ${(circ-len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"/>`;off+=len;});
+  const legend=items.map(it=>`<div class="lg"><i style="background:${it.color}"></i>${escapeHtml(it.label)} <b>${it.value}</b></div>`).join('');
+  return `<div class="chart"><svg width="140" height="140" viewBox="0 0 140 140">${parts}<text x="${cx}" y="${cy-3}" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2937">${total}</text><text x="${cx}" y="${cy+13}" text-anchor="middle" font-size="10" fill="#6b7280">总计</text></svg><div class="legend">${legend}</div></div>`;
+}
+function svgBarsH(items){
+  const max=Math.max(1,...items.map(i=>i.value));
+  const rowH=26,gap=8,W=360,H=items.length*(rowH+gap);
+  let s=`<svg width="100%" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMinYMin meet" style="max-height:240px">`;
+  items.forEach((it,i)=>{const y=i*(rowH+gap);const bw=Math.max(2,it.value/max*(W-150));
+    s+=`<text x="0" y="${y+rowH/2+4}" font-size="11.5" fill="#374151">${escapeHtml(it.label)}</text>`;
+    s+=`<rect x="92" y="${y+3}" width="${W-100}" height="${rowH-6}" rx="5" fill="#eef2f7"/>`;
+    s+=`<rect x="92" y="${y+3}" width="${bw}" height="${rowH-6}" rx="5" fill="${it.color}"/>`;
+    s+=`<text x="${92+bw+6}" y="${y+rowH/2+4}" font-size="11.5" font-weight="700" fill="#374151">${it.value}</text>`;
+  });
+  return s+`</svg>`;
+}
+function svgBarsV(items){
+  const max=Math.max(1,...items.map(i=>i.value));
+  const W=300,H=170,base=H-34,bw=46,gap=Math.max(14,Math.min(40,(W-40)/items.length-bw));
+  const totalW=items.length*(bw+gap);const ox=Math.max(10,(W-totalW)/2);
+  let s=`<svg width="100%" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">`;
+  items.forEach((it,i)=>{const x=ox+i*(bw+gap);const bh=it.value/max*(base-24);const y=base-bh;
+    s+=`<rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="5" fill="${it.color}"/>`;
+    s+=`<text x="${x+bw/2}" y="${y-6}" text-anchor="middle" font-size="11" font-weight="700" fill="#374151">${shortMoney(it.value)}</text>`;
+    s+=`<text x="${x+bw/2}" y="${base+16}" text-anchor="middle" font-size="11" fill="#6b7280">${escapeHtml(it.label)}</text>`;
+  });
+  s+=`<line x1="6" y1="${base}" x2="${W-6}" y2="${base}" stroke="#e2e8f0"/></svg>`;
+  return s;
+}
+function emptyChart(){return `<div class="empty-chart">暂无可统计的数据</div>`;}
+
+/* ============ 导航与渲染 ============ */
+const ICON={
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>',
+  policies:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 12h6M10 16h6"/></svg>',
+  models:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 13l2-5h11l3 5"/><path d="M3 13h18v4H3z"/><circle cx="7" cy="17" r="1.6"/><circle cx="17" cy="17" r="1.6"/></svg>',
+  developments:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v3M12 17v3M4 12h3M17 12h3"/></svg>',
+  customers:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5"/><circle cx="17" cy="9" r="2.2"/><path d="M15.5 14.5c2.5.4 4.5 2.2 4.5 4.5"/></svg>',
+  projects:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="6" height="6" rx="1"/><rect x="15" y="14" width="6" height="6" rx="1"/><path d="M9 7h6a3 3 0 0 1 3 3v4"/></svg>',
+  events:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>',
+  keyProjects:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.6 5.6L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.4-.4z"/></svg>',
+  processes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7"/></svg>',
+  bids:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4l6 6-9 9-6 1 1-6z"/><path d="M12 6l6 6"/></svg>',
+  vehicles:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6h13v9H2z"/><path d="M15 9h4l3 3v3h-7z"/><circle cx="6" cy="18" r="1.6"/><circle cx="18" cy="18" r="1.6"/></svg>',
+  sales:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-7"/></svg>',
+  openensure:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>'
+};
+const NAV=[
+  {key:'home',label:'首页',icon:ICON.home},
+  {key:'policies',label:'政策管理',icon:ICON.policies},
+  {key:'models',label:'车型管理',icon:ICON.models},
+  {key:'customers',label:'客户管理',icon:ICON.customers},
+  {key:'sales',label:'销售管理',icon:ICON.sales},
+  {key:'projects',label:'项目推进',icon:ICON.projects},
+  {key:'openensure',label:'开拓保障',icon:ICON.openensure},
+  {key:'keyProjects',label:'重点工作',icon:ICON.keyProjects},
+  {key:'processes',label:'流程制度',icon:ICON.processes},
+  {key:'bids',label:'投标管理',icon:ICON.bids},
+  {key:'vehicles',label:'车辆管理',icon:ICON.vehicles}
+];
+let currentView='home';
+let activeCust='customerLib';
+let activeBid='bidDocs';
+
+function buildNav(){
+  $('nav').innerHTML=NAV.map(n=>`<div class="nav-item" data-key="${n.key}" onclick="goto('${n.key}')">${n.icon}<span>${n.label}</span></div>`).join('');
+}
+function goto(key){currentView=key;closeDrawer();render();}
+
+function render(){
+  const view=$('view');
+  let html='';
+  try{
+    if(currentView==='home')html=renderHome();
+    else if(currentView==='customers')html=renderCustomers();
+    else if(currentView==='sales')html=renderSales();
+    else if(currentView==='openensure')html=renderOpenEnsure();
+    else if(currentView==='bids')html=renderBids();
+    else html=renderModule(currentView);
+  }catch(e){console.error('render error:',e);html=`<div class="empty">页面渲染出错：${escapeHtml(e.message)}</div>`;}
+  view.innerHTML=html;
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.toggle('active',el.dataset.key===currentView));
+  const navItem=NAV.find(n=>n.key===currentView);
+  $('topTitle').textContent=navItem?navItem.label:'首页';
+  updateTopbar();
+}
+function updateTopbar(){
+  const items=getTodayItems();
+  const b=$('todayBadge');
+  b.textContent=items.length+' 项待处理';
+  b.className='today-badge'+(items.length?' warn':'');
+}
+
+/* ============ 今天要处理 ============ */
+function getTodayItems(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const in7=new Date(today);in7.setDate(in7.getDate()+7);
+  const out=[];
+  const push=(view,type,name,dateStr)=>{const d=parseDate(dateStr);if(!d)return;if(d<today||d<=in7)out.push({view,type,name,date:dateStr,overdue:d<today});};
+  (state.developments||[]).forEach(d=>{if(d.状态!=='已转化'&&d.状态!=='已搁置')push('developments','客户开拓',d.客户名称,d.预计采购时间);});
+  (state.projects||[]).forEach(p=>{if(p.项目进度!=='车辆交付')push('projects','项目推进',p.项目名称,p.交付日期);});
+  (state.events||[]).forEach(e=>{if(e.状态!=='已完成')push('events','活动保障',e.活动名称,e.活动日期);});
+  (state.keyProjects||[]).forEach(k=>{if(k.状态!=='已完成')push('keyProjects','重点工作',k.项目内容,k.项目时间);});
+  (state.bidProjects||[]).forEach(b=>{if(b.投标进度!=='中标'&&b.投标进度!=='未中标')push('bids','投标管理',b.项目名称,b.投标截止日期);});
+  return out;
+}
+
+/* ============ 首页 ============ */
+function dist(arr,key){const m={};arr.forEach(x=>{const k=x[key]||'未分类';m[k]=(m[k]||0)+1;});return m;}
+function distSum(arr,key,sumKey){const m={};arr.forEach(x=>{const k=x[key]||'未分类';m[k]=(m[k]||0)+(Number(x[sumKey]||0));});return m;}
+function normalizeType(t){const map={'政采':'政府采购','政府':'政府采购','央企':'央企客户','国企':'国企客户','集团':'集团客户','事业':'事业单位','行业':'行业客户','企业':'企业客户'};return map[t]||t;}
+function addDays(date,n){const d=new Date(date.getTime());d.setDate(d.getDate()+n);return d;}
+function projOverdue(p){
+  if(p.项目进度==='车辆交付')return false;
+  let risk=false;
+  if(p.立项启动日期&&p.交付日期){const end=addDays(parseDate(p.立项启动日期),40);const dd=parseDate(p.交付日期);if(end&&dd&&end>dd)risk=true;}
+  if(p.交付日期&&daysUntil(p.交付日期)<0)risk=true;
+  return risk;
+}
+function salesMetrics(year){
+  const rows=(state.purchaseCustomers||[]).filter(r=>!year||r.年度===year);
+  const m={};CUST_TYPES.forEach(t=>m[t]=0);
+  rows.forEach(r=>{const k=normalizeType(r.客户类型);if(k in m)m[k]+=Number(r.销量||r.采购数量||r.数量||0);});
+  m.累计=CUST_TYPES.reduce((a,t)=>a+m[t],0);
+  return m;
+}
+function salesMetricCards(sm,variant){
+  const labels=['累计销售','政府采购','国企客户','央企客户','集团客户','事业单位','企业客户','行业客户'];
+  return `<div class="sales-row${variant==='overview'?' overview':''}">`+labels.map((lb,i)=>{const val=i===0?sm.累计:sm[lb];return `<div class="scard"><div class="n">${val}<span> 台</span></div><div class="l">${lb}</div></div>`;}).join('')+`</div>`;
+}
+function yearAmt(year){return (state.purchaseCustomers||[]).filter(p=>p.年度===year).reduce((a,b)=>a+Number(b.开票金额||b.销售价格||0),0);}
+function allAmt(){return (state.purchaseCustomers||[]).reduce((a,b)=>a+Number(b.开票金额||b.销售价格||0),0);}
+/* 销售概览已合并为 renderHome 中的统一底框（见「销售项目概览」），旧 helper boxedSales/bareSales 停用 */
+function homeMetrics(){
+  const projN=(state.projects||[]).filter(p=>p.项目进度!=='车辆交付').length;
+  const keyN=(state.keyProjects||[]).filter(k=>k.状态!=='已完成').length;
+  const evN=(state.events||[]).filter(e=>e.状态!=='已完成').length;
+  const overdueN=(state.projects||[]).filter(projOverdue).length;
+  const pur26=(state.purchaseCustomers||[]).filter(p=>p.年度==='2026');
+  const salesB=pur26.reduce((a,b)=>a+Number(b.采购数量||b.数量||0),0);
+  const budgetB=pur26.reduce((a,b)=>a+Number(b.预算金额||0),0)/10000;
+  return {projN,keyN,evN,overdueN,salesB,budgetB,salesPct:SALES_TARGET?Math.round(salesB/SALES_TARGET*100):0,budgetPct:BUDGET_TARGET?Math.round(budgetB/BUDGET_TARGET*100):0,todo:projN+keyN+evN};
+}
+function renderHome(){
+  let h=`<div class="home">`;
+  if(totalCount()>=30)h+=`<div class="hint">数据已积累 ${totalCount()} 条，建议点击右上角「导出JSON」备份，避免意外丢失。</div>`;
+  // 置顶项目面板（6项）
+  const m=homeMetrics();
+  const panel=[
+    {n:m.projN,l:'跟进项目',sub:'未闭环',c:'var(--primary)',i:ICON.projects},
+    {n:m.keyN,l:'重点工作',sub:'未闭环',c:'var(--amber)',i:ICON.keyProjects},
+    {n:m.salesPct+'%',l:'销量进度',sub:`目标${SALES_TARGET}台·已售${m.salesB}台`,c:m.salesPct>=100?'var(--green)':'var(--primary)',i:ICON.policies},
+    {n:m.budgetPct+'%',l:'预算进度',sub:`预算${BUDGET_TARGET}万·已用${m.budgetB.toFixed(1)}万`,c:m.budgetPct>=100?'var(--green)':'var(--red)',i:ICON.models},
+    {n:m.todo,l:'待办事项',sub:'待处理',c:'var(--navy)',i:ICON.developments},
+    {n:m.overdueN,l:'逾期风险',sub:'项目推进',c:m.overdueN?'var(--red)':'var(--green)',i:ICON.events}
+  ];
+  h+=`<div class="view-head"><h2>经营驾驶舱</h2></div>`;
+  h+=`<div class="kpi-grid">`+panel.map(k=>`<div class="kpi"><div class="kpi-title">${k.l}</div><div class="kpi-main"><div class="kpi-ico" style="color:${k.c}">${k.i}</div><div class="kpi-n" style="color:${k.c}">${k.n}</div></div><div class="kpi-sub">${k.sub}</div></div>`).join('')+`</div>`;
+  // 销量概览 + 2025 + 2026 销售项目，统一放入一个底框
+  const smT=salesMetrics(null), sm25=salesMetrics('2025'), sm26=salesMetrics('2026');
+  h+=`<div class="yr-card" style="margin-bottom:18px"><div class="yr-head"><h3>销售项目概览</h3></div>`
+    +`<div class="sales-block"><div class="sales-block-h">销量概览（累计）<span class="yr-total">合计 <b>${smT.累计}</b> 台 · ¥${shortMoney(allAmt())}</span></div>${salesMetricCards(smT,'overview')}</div>`
+    +`<div class="sales-block"><div class="sales-block-h">2025年销售项目<span class="yr-total">合计 <b>${sm25.累计}</b> 台 · ¥${shortMoney(yearAmt('2025'))}</span></div>${salesMetricCards(sm25)}</div>`
+    +`<div class="sales-block"><div class="sales-block-h">2026年销售项目<span class="yr-total">合计 <b>${sm26.累计}</b> 台 · ¥${shortMoney(yearAmt('2026'))}</span></div>${salesMetricCards(sm26)}</div>`
+    +`</div>`;
+  // 图表（保留：客户类型销量分布 / 项目阶段分布）— 均按新销售口径
+  const smAll=salesMetrics(null);
+  const donutItems=CUST_TYPES.map((k,i)=>({label:k,value:smAll[k]||0,color:PALETTE[i%PALETTE.length]})).filter(x=>x.value>0);
+  const projDist=dist(state.projects||[],'项目进度');
+  const projItems=PROJ_STAGES.map((s,i)=>({label:s,value:projDist[s]||0,color:PALETTE[i%PALETTE.length]}));
+  h+=`<div class="chart-grid">`;
+  h+=`<div class="chart-card"><h4>客户类型销量分布（台）</h4>${donutItems.length?svgDonut(donutItems):emptyChart()}</div>`;
+  h+=`<div class="chart-card"><h4>项目阶段分布</h4>${projItems.some(x=>x.value)?svgBarsH(projItems):emptyChart()}</div>`;
+  h+=`</div>`;
+  // 今天要处理
+  const items=getTodayItems();
+  h+=`<div class="today-card"><div class="today-head"><span>今天要处理</span><span class="badge ${items.length?'badge-warn':'badge-ok'}">${items.length} 项</span></div>`;
+  if(!items.length)h+=`<div class="empty" style="padding:24px">暂无紧急待办，节奏良好。</div>`;
+  else{
+    h+=`<ul class="today-list">`;
+    items.forEach(it=>{h+=`<li class="${it.overdue?'overdue':''}"><div><span class="tag">${it.type}</span><b>${escapeHtml(it.name)}</b><span class="date">${it.overdue?'已逾期 ':'临近 '}${it.date}</span></div><button class="btn-mini" onclick="goto('${it.view}')">去处理</button></li>`;});
+    h+=`</ul>`;
+  }
+  h+=`</div></div>`;
+  return h;
+}
+
+/* ============ 通用模块：切片器 + 卡片网格 ============ */
+const SLICER={
+  policies:[{f:'政策类型',opts:['通用销售政策','公务销售政策','行业销售政策']},{f:'适用车型',opts:modelNames}],
+  models:[{f:'车型类别',opts:['通用车型','指定车型','特殊车型']}],
+  developments:[{f:'状态',opts:['跟进中','已转化','已搁置']},{f:'开拓形式',opts:['电话拜访','上门拜访','展会','转介绍','线上','其他']}],
+  projects:[{f:'项目进度',opts:PROJ_STAGES}],
+  events:[{f:'状态',opts:['筹备中','进行中','已完成']},{f:'活动形式',opts:['试驾体验','车展','交车仪式','品鉴会','其他']}],
+  keyProjects:[{f:'状态',opts:['进行中','已完成','暂缓']}],
+  processes:[{f:'制度分类',opts:()=>state.processCats||[]}],
+  vehicles:[{f:'车辆用途',opts:['试驾车','展车']},{f:'状态',opts:['在库','外出','已处置']}]
+};
+const FILTER_KEYS={
+  policies:['政策类型','适用车型'],models:['车型类别'],developments:['状态','开拓形式'],
+  projects:['项目进度'],events:['状态','活动形式'],keyProjects:['状态'],
+  processes:['制度分类'],vehicles:['车辆用途','状态']
+};
+const UPLOAD_PAGES=['projects','processes','vehicles'];
+function slicerHtml(key){
+  const defs=SLICER[key];if(!defs)return '';
+  let h=`<div class="slicer">`+(key==='policies'||key==='projects'?'':`<span class="sl-label">切片器：</span>`);
+  defs.forEach(d=>{
+    const opts=typeof d.opts==='function'?d.opts():d.opts;
+    const cur=F[key+'#'+d.f]||'';
+    h+=`<select onchange="F['${key}#${d.f}']=this.value;render()"><option value="">${d.f}：全部</option>`+opts.map(o=>`<option ${cur===o?'selected':''}>${escapeHtml(o)}</option>`).join('')+`</select>`;
+  });
+  return h+`</div>`;
+}
+function renderModule(key){
+  const all=state[key]||[];
+  let items=all.slice();
+  (FILTER_KEYS[key]||[]).forEach(f=>{const v=F[key+'#'+f];if(v)items=items.filter(x=>{const cv=(x[f]==null?'':x[f].toString());const parts=cv.includes(',')?cv.split(',').map(s=>s.trim()):[cv.trim()];return parts.includes(v);});});
+  const upBtn=UPLOAD_PAGES.includes(key)?`<button class="btn btn-ghost" onclick="openUpload('${key}')">上传数据</button>`:'';
+  let h;
+  if(key==='projects'){
+    h=`<div class="view-head"><h2>${MODULES[key].label}</h2><div style="display:flex;gap:10px;margin-left:auto">${upBtn.replace('btn-ghost','btn-primary')}<button class="btn btn-primary" onclick="addGen('${key}')">+ 新增</button></div></div>`;
+  } else {
+    h=`<div class="view-head"><h2>${MODULES[key].label}</h2>${upBtn}<button class="btn btn-primary" onclick="addGen('${key}')">+ 新增</button></div>`;
+  }
+  h+=slicerHtml(key);
+  if(!items.length){h+=`<div class="empty">${all.length?'当前切片无匹配记录，调整筛选条件试试。':'暂无数据，点击右上角「+ 新增」添加第一条记录。'}</div>`;return h;}
+  h+=`<div class="card-grid">`+items.map(it=>moduleCard(key,it)).join('')+`</div>`;
+  return h;
+}
+function moduleCard(key,it){
+  let blocks=[],title='',headerRight='';
+  const foot=`<button class="link" onclick="editGen('${key}','${it.id}')">编辑</button><button class="link danger" onclick="delGen('${key}','${it.id}')">删除</button>`;
+  switch(key){
+    case 'policies':{
+      const models=(it.适用车型||'').split(',').map(s=>s.trim()).filter(Boolean);
+      title=it.政策名称;
+      const modelTags=models.map(m=>t(m,'tag-blue'));
+      const skuRow=(it.华为SKU||it.工厂整编码)?`<div class="code-row"><span class="code">SKU:${escapeHtml(it.华为SKU||'-')}</span><span class="code">整编码:${escapeHtml(it.工厂整编码||'-')}</span></div>`:'';
+      blocks=[
+        tags([...modelTags,t(it.政策类型,tagStatus(it.政策类型))]),
+        pre(it.政策要点),
+        skuRow,
+        kv('销售权益',it.销售权益)
+      ];
+      break;
+    }
+    case 'models':{
+      title=it.车型名称;
+      blocks=[
+        tags([t(it.车型类别, it.车型类别==='特殊车型'?'tag-amber':'tag-blue')]),
+        codeChips(it),
+        kv('关联销售政策', it.关联销售政策),
+        pre(it.选配清单)
+      ];
+      break;
+    }
+    case 'developments':{
+      title=it.客户名称;
+      blocks=[
+        tags([t(it.状态,tagStatus(it.状态)),t(it.开拓形式,'tag-gray')]),
+        kv('对接人', it.对接人?(it.对接人+(it.对接人职务?'（'+it.对接人职务+'）':'')):''),
+        kv('保有量/更换周期', (it.现有车辆保有量||'')+(it.更换周期?' / '+it.更换周期:'')),
+        kv('预计采购', (it.预计采购量?it.预计采购量+'台 ':'')+(it.预计采购时间||'')),
+        pre(it.后续工作)
+      ];
+      break;
+    }
+    case 'projects':{
+      const idx=PROJ_STAGES.indexOf(it.项目进度);
+      const risk=projOverdue(it);
+      title=it.项目名称;
+      headerRight=risk?`<span class="tag tag-red">逾期风险</span>`:'';
+      const steps=PROJ_STAGES.map((s,i)=>{
+        const cls=i<idx?'done':(i===idx?'cur':'');
+        return `<span class="stage-pill ${cls}" onclick="setProjStage('${it.id}','${escapeHtml(s)}')"><span class="dot">${i+1}</span>${escapeHtml(s)}</span>`;
+      }).join('');
+      blocks=[
+        tags([t(it.客户类型,tagType(it.客户类型)),t(it.采购形式,'tag-gray')]),
+        kv('客户名称', it.客户名称),
+        kv('采购车型', it.采购车型),
+        kv('采购数量', it.采购数量?(it.采购数量+'台'):''),
+        kv('立项时间', fmtDateCN(it.立项启动日期)),
+        kv('交付日期', fmtDateCN(it.交付日期)),
+        kv('剩余时间', remainDaysText(it.交付日期)),
+        `<div class="stepper">${steps}</div>`,
+        pre(it.备注)
+      ];
+      break;
+    }
+    case 'events':{
+      title=it.活动名称;
+      blocks=[
+        tags([t(it.状态,tagStatus(it.状态)),t(it.活动形式,'tag-gray')]),
+        kv('地点', it.活动地点),
+        kv('车辆', (it.车辆数量||'')+(it.车辆来源?' · '+it.车辆来源:'')+' · '+(it.车辆需求||'')),
+        kv('活动日期', it.活动日期||''),
+        pre(it.活动要求)
+      ];
+      break;
+    }
+    case 'keyProjects':{
+      title=it.项目内容;
+      blocks=[
+        tags([t(it.状态,tagStatus(it.状态))]),
+        kv('负责人', it.负责人),
+        kv('项目时间', it.项目时间||''),
+        kv('交付物', it.交付物),
+        pre(it.项目要求)
+      ];
+      break;
+    }
+    case 'processes':{
+      title=it.制度名称;
+      blocks=[
+        tags([t(it.制度分类,'tag-blue')]),
+        pre(it.内容),
+        kv('更新日期', it.更新日期)
+      ];
+      break;
+    }
+    case 'vehicles':{
+      title=(it.车型||'')+(it.车牌号?' · '+it.车牌号:'');
+      blocks=[
+        tags([t(it.车辆用途,'tag-blue'),t(it.状态,tagStatus(it.状态))]),
+        kv('车架号(VIN)', it.车架号),
+        kv('车辆归属公司', it.车辆归属公司),
+        kv('租期', it.租期?(it.租期+' 天'):''),
+        kv('使用人', it.使用人),
+        kv('门店', it.门店),
+        pre(it.备注)
+      ];
+      break;
+    }
+  }
+  return mcard(title,blocks,foot,headerRight);
+}
+function syncProjectToSales(p){
+  if((state.purchaseCustomers||[]).some(r=>r.来源项目===p.id))return;
+  state.purchaseCustomers.push({id:uid(),年度:String(new Date().getFullYear()),采购上牌公司:p.客户名称||'',用车公司:'',客户简称:p.客户名称||'',客户类型:p.客户类型||'',车型版本:p.采购车型||'',车架号:'',数量:'1',开票金额:'',分担预算:'',交付中心:'',备注:'自动同步自闭环项目：'+(p.项目名称||'')+' (交付 '+(p.交付日期||'')+')',来源项目:p.id});
+  save('purchaseCustomers');
+  toast('项目已闭环，已自动生成销售明细，请补录车架号/金额等');
+}
+function setProjStage(id,stage){
+  const p=state.projects.find(x=>x.id===id);if(!p)return;
+  if(p.项目进度===stage){toast('当前已是「'+stage+'」');return;}
+  const idx=PROJ_STAGES.indexOf(stage);
+  if(idx>=2&&!p.立项启动日期){p.立项启动日期=todayStr();toast('已记录立项启动（'+todayStr()+'），40天交付倒计时启动');}
+  p.项目进度=stage;
+  if(stage==='车辆交付')syncProjectToSales(p);
+  save('projects');render();toast('进度更新：'+stage);
+}
+function addGen(key){const cfg=MODULES[key];openForm({title:'新增 - '+cfg.label,fields:cfg.fields,onSubmit:v=>{state[key].push({id:uid(),...v});save(key);render();toast('已添加');}});}
+function editGen(key,id){const cfg=MODULES[key];const it=state[key].find(x=>x.id===id);openForm({title:'编辑 - '+cfg.label,fields:cfg.fields,values:it,onSubmit:v=>{Object.assign(it,v);save(key);render();toast('已更新');}});}
+function delGen(key,id){appConfirm('确定删除该记录？此操作不可撤销。',()=>{state[key]=state[key].filter(x=>x.id!==id);save(key);render();toast('已删除');},true);}
+
+/* ============ 客户管理：三个子库 + 切片器 + 信息总库表格 ============ */
+function slicerCust(label,opts,fkey){
+  const cur=F[fkey]||'';
+  return `<div class="slicer"><span class="sl-label">${label}：</span><select onchange="F['${fkey}']=this.value;render()"><option value="">全部</option>${opts.map(o=>`<option ${cur===o?'selected':''}>${escapeHtml(o)}</option>`).join('')}</select></div>`;
+}
+function renderCustomers(){
+  const tabs=[{k:'customerLib',l:'客户信息总库'},{k:'intentCustomers',l:'意向客户库'}];
+  let h=`<div class="view-head"><h2>客户管理</h2><button class="btn btn-ghost" onclick="openUpload('customers')">上传数据</button></div><div class="tabs">`;
+  tabs.forEach(tb=>{h+=`<div class="tab ${activeCust===tb.k?'active':''}" onclick="switchCust('${tb.k}')">${tb.l}</div>`;});
+  h+=`</div>`;
+  if(activeCust==='customerLib')h+=slicerCust('客户类型',state.customerTypes,'cust#客户类型');
+  if(activeCust==='intentCustomers'){h+=slicerCust('客户类型',state.customerTypes,'cust#客户类型');h+=slicerCust('意向级别',['A','B','C'],'intent#意向级别');}
+  let items=(state[activeCust]||[]).slice();
+  if(activeCust==='customerLib'&&F['cust#客户类型'])items=items.filter(x=>x.客户类型===F['cust#客户类型']);
+  if(activeCust==='intentCustomers'){if(F['cust#客户类型'])items=items.filter(x=>x.客户类型===F['cust#客户类型']);if(F['intent#意向级别'])items=items.filter(x=>x.意向级别===F['intent#意向级别']);}
+  h+=`<button class="btn btn-primary" onclick="addCust('${activeCust}')">+ 新增</button>`;
+  if(!items.length){h+=`<div class="empty">${state[activeCust].length?'当前切片无匹配记录。':'暂无数据，点击上方「+ 新增」添加。'}</div>`;return h;}
+
+  if(activeCust==='customerLib'){
+    h+=`<div class="tbl-wrap"><table class="tbl"><thead><tr>
+      <th>客户名称</th><th>客户类型</th><th>行业</th><th>联系人</th><th>联系电话</th><th>地址</th><th>备注</th><th>操作</th>
+      </tr></thead><tbody>`;
+    items.forEach(it=>{
+      h+=`<tr>
+        <td>${escapeHtml(it.客户名称||'')}</td>
+        <td>${t(it.客户类型,tagType(it.客户类型))}</td>
+        <td>${escapeHtml(it.行业||'')}</td>
+        <td>${escapeHtml(it.联系人||'')}</td>
+        <td>${escapeHtml(it.联系电话||'')}</td>
+        <td>${escapeHtml(it.地址||'')}</td>
+        <td>${escapeHtml(it.备注||'')}</td>
+        <td><span class="op"><button class="link" onclick="editCust('customerLib','${it.id}')">编辑</button><button class="link danger" onclick="delCust('customerLib','${it.id}')">删除</button></span></td>
+      </tr>`;
+    });
+    h+=`</tbody></table></div>`;
+    return h;
+  }
+  h+=`<div class="card-grid">`+items.map(it=>custCard(activeCust,it)).join('')+`</div>`;
+  return h;
+}
+function switchCust(k){activeCust=k;renderCustomers();}
+function custCard(kind,it){
+  if(kind==='intentCustomers'){
+    return mcard(it.客户名称,[
+      tags([t(it.客户类型,tagType(it.客户类型)),t('意向'+it.意向级别,tagLevel(it.意向级别))]),
+      kv('意向车型', it.意向采购车型),
+      kv('采购数量', it.采购数量?it.采购数量+'台':''),
+      kv('预计采购', it.预计采购时间||''),
+      pre(it.备注)
+    ], `<button class="link" onclick="editCust('intentCustomers','${it.id}')">编辑</button><button class="link danger" onclick="delCust('intentCustomers','${it.id}')">删除</button>`);
+  }
+  const amt=Number(it.开票金额||it.销售价格||0), bud=Number(it.分担预算||it.预算金额||0);
+  return mcard(it.采购上牌公司||it.客户名称,[
+    tags([t(it.年度,'tag-blue'),t(it.客户类型,tagType(it.客户类型))]),
+    kv('车型版本/数量', (it.车型版本||it.采购车型||'')+(it.数量||it.采购数量?' · '+(it.数量||it.采购数量)+'台':'')),
+    kv('开票金额', fmtMoney(it.开票金额||it.销售价格)),
+    kv('分担预算', fmtMoney(it.分担预算||it.预算金额)),
+    kv('交付中心', it.交付中心||''),
+    kv('车架号', it.车架号||''),
+    pre(it.备注)
+  ], `<button class="link" onclick="editCust('purchaseCustomers','${it.id}')">编辑</button><button class="link danger" onclick="delCust('purchaseCustomers','${it.id}')">删除</button>`);
+}
+function addCust(arrKey){const cfg=CUST[arrKey];openForm({title:'新增 - '+cfg.label,fields:cfg.fields,onSubmit:v=>{state[arrKey].push({id:uid(),...v});save(arrKey);render();toast('已添加');}});}
+function editCust(arrKey,id){const cfg=CUST[arrKey];const it=state[arrKey].find(x=>x.id===id);openForm({title:'编辑 - '+cfg.label,fields:cfg.fields,values:it,onSubmit:v=>{Object.assign(it,v);save(arrKey);render();toast('已更新');}});}
+function delCust(arrKey,id){appConfirm('确定删除该记录？',()=>{state[arrKey]=state[arrKey].filter(x=>x.id!==id);save(arrKey);render();toast('已删除');},true);}
+
+/* ============ 投标管理：两个子库 + 切片器 + 卡片 ============ */
+function renderBids(){
+  const tabs=[{k:'bidDocs',l:'投标资料库'},{k:'bidProjects',l:'投标项目'}];
+  let h=`<div class="view-head"><h2>投标管理</h2><button class="btn btn-ghost" onclick="openUpload('bids')">上传数据</button></div><div class="tabs">`;
+  tabs.forEach(tb=>{h+=`<div class="tab ${activeBid===tb.k?'active':''}" onclick="switchBid('${tb.k}')">${tb.l}</div>`;});
+  h+=`</div>`;
+  if(activeBid==='bidDocs')h+=slicerCust('资料类别',state.bidDocCats,'bid#资料类别');
+  else{h+=slicerCust('投标进度',['报名','标书制作','递交','开标','中标','未中标'],'bid#投标进度');h+=slicerCust('投标结果',['待定','中标','未中标'],'bid#投标结果');}
+  let items=(state[activeBid]||[]).slice();
+  if(activeBid==='bidDocs'&&F['bid#资料类别'])items=items.filter(x=>x.资料类别===F['bid#资料类别']);
+  if(activeBid==='bidProjects'){if(F['bid#投标进度'])items=items.filter(x=>x.投标进度===F['bid#投标进度']);if(F['bid#投标结果'])items=items.filter(x=>x.投标结果===F['bid#投标结果']);}
+  h+=`<button class="btn btn-primary" onclick="addBid('${activeBid}')">+ 新增</button>`;
+  if(!items.length){h+=`<div class="empty">${state[activeBid].length?'当前切片无匹配记录。':'暂无数据，点击上方「+ 新增」添加。'}</div>`;return h;}
+  h+=`<div class="card-grid">`+items.map(it=>bidCard(it)).join('')+`</div>`;
+  return h;
+}
+function switchBid(k){activeBid=k;renderBids();}
+function bidCard(it){
+  if(activeBid==='bidDocs'){
+    return mcard(it.资料名称,[
+      tags([t(it.资料类别,'tag-blue')]),
+      pre(it.说明),
+      kv('更新日期', it.更新日期)
+    ], `<button class="link" onclick="editBid('bidDocs','${it.id}')">编辑</button><button class="link danger" onclick="delBid('bidDocs','${it.id}')">删除</button>`);
+  }
+  let idx=BID_STAGES.indexOf(it.投标进度);let color='var(--primary)';
+  if(it.投标结果==='中标'){idx=BID_STAGES.length-1;color='var(--green)';}
+  else if(it.投标结果==='未中标'){idx=BID_STAGES.length-1;color='var(--red)';}
+  return mcard(it.项目名称,[
+    kv('关联客户', it.关联客户),
+    tags([t(it.投标结果,tagStatus(it.投标结果))]),
+    kv('投标截止', it.投标截止日期||''),
+    stageBar(BID_STAGES, idx, color),
+    pre(it.投标实施)
+  ], `<button class="link" onclick="editBid('bidProjects','${it.id}')">编辑</button><button class="link danger" onclick="delBid('bidProjects','${it.id}')">删除</button>`);
+}
+function addBid(arrKey){const cfg=BID[arrKey];openForm({title:'新增 - '+cfg.label,fields:cfg.fields,onSubmit:v=>{state[arrKey].push({id:uid(),...v});save(arrKey);renderBids();toast('已添加');}});}
+function editBid(arrKey,id){const cfg=BID[arrKey];const it=state[arrKey].find(x=>x.id===id);openForm({title:'编辑 - '+cfg.label,fields:cfg.fields,values:it,onSubmit:v=>{Object.assign(it,v);save(arrKey);renderBids();toast('已更新');}});}
+function delBid(arrKey,id){appConfirm('确定删除该记录？',()=>{state[arrKey]=state[arrKey].filter(x=>x.id!==id);save(arrKey);renderBids();toast('已删除');},true);}
+
+/* ============ 销售管理：订单销售明细（通栏卡片 + 筛选 + 逐台表） ============ */
+function salesBanner(title,items){
+  return `<div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:12px"><div style="font-weight:700;font-size:14px;color:var(--text);margin-right:4px">${title}</div>`+
+    items.map(it=>`<div style="font-size:13px;color:var(--sub)">${it.label} <b style="color:#e11d48;font-size:21px;font-weight:800;margin:0 2px">${it.val}</b>${it.unit}</div>`).join('')+`</div>`;
+}
+function salesFilterSelect(label,fkey,opts){
+  const cur=F[fkey]||'';
+  return `<span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--sub)">${label}<select onchange="F['${fkey}']=this.value;render()" style="padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:#fff"><option value="">全部</option>${opts.map(o=>`<option ${cur===o?'selected':''}>${escapeHtml(o)}</option>`).join('')}</select></span>`;
+}
+function renderSales(){
+  let h=`<div class="view-head"><h2>销售管理</h2><div style="display:flex;gap:10px;margin-left:auto"><button class="btn btn-primary" onclick="addCust('purchaseCustomers')">+ 新增</button><button class="btn btn-primary" onclick="openUpload('sales')">上传数据</button><button class="btn btn-primary" onclick="exportSalesCSV()">下载数据</button></div></div>`;
+  const rows=state.purchaseCustomers||[];
+  const dv={};CUST_TYPES.forEach(ty=>dv[ty]={cust:new Set(),qty:0});
+  rows.forEach(r=>{const ty=normalizeType(r.客户类型);if(!(ty in dv))return;const nm=r.客户简称||r.采购上牌公司||r.客户名称||'';if(nm)dv[ty].cust.add(nm);dv[ty].qty+=Number(r.数量||r.销量||r.采购数量||0);});
+  const lbl=ty=>ty;
+  h+=salesBanner('客户数量',CUST_TYPES.map(ty=>({label:lbl(ty),val:dv[ty].cust.size,unit:'家'})));
+  h+=salesBanner('销售数量',CUST_TYPES.map(ty=>({label:lbl(ty),val:dv[ty].qty,unit:'台'})));
+  const modelOpts=[...new Set(rows.map(r=>r.采购车型).filter(Boolean))];
+  const versionOpts=[...new Set(rows.map(r=>r.车型版本).filter(Boolean))];
+  const centerOpts=[...new Set(rows.map(r=>r.交付中心).filter(Boolean))];
+  h+=`<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:6px 0 12px">`+salesFilterSelect('年度','pur#年度',state.purchaseYears||[])+salesFilterSelect('客户类型','pur#客户类型',CUST_TYPES)+salesFilterSelect('采购车型','pur#采购车型',modelOpts)+salesFilterSelect('车型版本','pur#车型版本',versionOpts)+salesFilterSelect('交付中心','pur#交付中心',centerOpts)+`</div>`;
+  let items=rows.slice();
+  if(F['pur#年度'])items=items.filter(x=>x.年度===F['pur#年度']);
+  if(F['pur#客户类型'])items=items.filter(x=>x.客户类型===F['pur#客户类型']);
+  if(F['pur#采购车型'])items=items.filter(x=>x.采购车型===F['pur#采购车型']);
+  if(F['pur#车型版本'])items=items.filter(x=>x.车型版本===F['pur#车型版本']);
+  if(F['pur#交付中心'])items=items.filter(x=>x.交付中心===F['pur#交付中心']);
+  if(!items.length){h+=`<div class="empty">${rows.length?'当前筛选无匹配记录。':'暂无数据，点击上方「+ 新增」或「上传数据」添加。'}</div>`;return h;}
+  let qtySum=0;
+  h+=`<div class="tbl-wrap"><table class="tbl sales-tbl"><thead><tr><th style="width:7%">年度</th><th style="width:14%">采购/上牌公司名称</th><th style="width:14%">用车公司名称</th><th style="width:6%">客户简称</th><th style="width:6%">客户类型</th><th style="width:6%">采购车型</th><th style="width:8%">车型版本</th><th style="width:12%">车架号</th><th style="width:5%">开票金额</th><th style="width:5%">分担预算</th><th style="width:8%">交付中心</th><th style="width:4%">数量</th><th style="width:5%">操作</th></tr></thead><tbody>`;
+  items.forEach(it=>{
+    const q=Number(it.数量||it.销量||it.采购数量||0);qtySum+=q;
+    h+=`<tr><td>${escapeHtml(it.年度||'')}</td><td>${escapeHtml(it.采购上牌公司||it.客户名称||'')}</td><td>${escapeHtml(it.用车公司||'')}</td><td>${escapeHtml(it.客户简称||it.客户名称||'')}</td><td>${t(it.客户类型,tagType(it.客户类型))}</td><td>${escapeHtml(it.采购车型||'')}</td><td>${escapeHtml(it.车型版本||'')}</td><td>${escapeHtml(it.车架号||'')}</td><td>${fmtMoney(it.开票金额||it.销售价格)}</td><td>${fmtMoney(it.分担预算||it.预算金额)}</td><td>${escapeHtml(it.交付中心||'')}</td><td>${q}</td><td><span class="op"><button class="link" onclick="editCust('purchaseCustomers','${it.id}')">编辑</button><button class="link danger" onclick="delCust('purchaseCustomers','${it.id}')">删除</button></span></td></tr>`;
+  });
+  h+=`<tr style="font-weight:700;background:#f8fafc"><td colspan="11" style="text-align:right">合计（本筛选）</td><td>${qtySum}</td><td></td></tr>`;
+  h+=`</tbody></table></div>`;
+  return h;
+}
+
+/* ============ 开拓保障：客户开拓 + 活动保障（上下两块） ============ */
+function renderOpenEnsure(){
+  let h=`<div class="view-head"><h2>开拓保障</h2></div>`;
+  h+=`<div class="submod"><div class="submod-head"><h3>客户开拓</h3><button class="btn btn-primary" onclick="addGen('developments')">+ 新增</button></div>`;
+  h+=slicerHtml('developments');
+  let dItems=(state.developments||[]).slice();
+  (FILTER_KEYS.developments||[]).forEach(f=>{const v=F['developments#'+f];if(v)dItems=dItems.filter(x=>x[f]===v);});
+  if(!dItems.length)h+=`<div class="empty">${state.developments.length?'当前切片无匹配记录。':'暂无数据，点击上方「+ 新增」添加。'}</div>`;
+  else h+=`<div class="card-grid">`+dItems.map(it=>moduleCard('developments',it)).join('')+`</div>`;
+  h+=`</div>`;
+  h+=`<div class="submod" style="margin-top:22px"><div class="submod-head"><h3>活动保障</h3><button class="btn btn-primary" onclick="addGen('events')">+ 新增</button></div>`;
+  h+=slicerHtml('events');
+  let eItems=(state.events||[]).slice();
+  (FILTER_KEYS.events||[]).forEach(f=>{const v=F['events#'+f];if(v)eItems=eItems.filter(x=>x[f]===v);});
+  if(!eItems.length)h+=`<div class="empty">${state.events.length?'当前切片无匹配记录。':'暂无数据，点击上方「+ 新增」添加。'}</div>`;
+  else h+=`<div class="card-grid">`+eItems.map(it=>moduleCard('events',it)).join('')+`</div>`;
+  h+=`</div>`;
+  return h;
+}
+
+/* ============ 数据上传：CSV/TSV 智能识别字段 ============ */
+let gUpload={headers:[],rows:[],target:'',map:[],mode:'append'};
+function uploadTargetsFor(page){
+  if(page==='customers')return [{key:'customerLib',label:'客户信息总库'},{key:'intentCustomers',label:'意向客户库'}];
+  if(page==='bids')return [{key:'bidDocs',label:'投标资料库'},{key:'bidProjects',label:'投标项目'}];
+  if(page==='sales')return [{key:'purchaseCustomers',label:'订单销售明细'}];
+  if(page==='projects')return [{key:'projects',label:'项目推进'}];
+  if(page==='processes')return [{key:'processes',label:'流程制度'}];
+  if(page==='vehicles')return [{key:'vehicles',label:'车辆管理'}];
+  return [];
+}
+function getFieldDefs(target){
+  if(target==='customerLib'||target==='intentCustomers')return (CUST[target]||{}).fields||[];
+  if(target==='bidDocs'||target==='bidProjects')return (BID[target]||{}).fields||[];
+  if(MODULES[target])return MODULES[target].fields;
+  return [];
+}
+const ALIAS={
+  purchaseCustomers:{
+    '客户名称':'采购上牌公司','上牌公司':'采购上牌公司','采购公司':'采购上牌公司','公司名称':'采购上牌公司','购买方':'采购上牌公司','采购上牌公司名称':'采购上牌公司','采购/上牌公司名称':'采购上牌公司',
+    '用车公司名称':'用车公司','用车单位':'用车公司','使用单位':'用车公司',
+    '客户简称':'客户简称','简称':'客户简称',
+    '客户类型':'客户类型','类型':'客户类型','客户类别':'客户类型',
+    '车型版本':'车型版本','车型':'车型版本','采购车型':'车型版本','车辆':'车型版本','配置':'车型版本',
+    '车架号':'车架号','vin':'车架号','车架':'车架号','车架号码':'车架号',
+    '数量':'数量','数量台':'数量','台数':'数量','台':'数量','采购数量':'数量',
+    '开票金额':'开票金额','金额':'开票金额','开票':'开票金额','价格':'开票金额','销售额':'开票金额','销售价格':'开票金额',
+    '分担预算':'分担预算','预算':'分担预算','分担':'分担预算','预算金额':'分担预算',
+    '交付中心':'交付中心','交付':'交付中心','中心':'交付中心','门店':'交付中心','实施店名':'交付中心','交付门店':'交付中心',
+    '备注':'备注','说明':'备注'
+  }
+};
+function normHeader(h){return String(h||'').trim().toLowerCase().replace(/\s+/g,'').replace(/[\(\)（）]/g,'');}
+function matchField(header,defs,target){
+  const h=normHeader(header);
+  if(!h)return '';
+  for(const f of defs)if(normHeader(f.label)===h)return f.key;
+  for(const f of defs)if(f.key.toLowerCase()===h)return f.key;
+  const al=(ALIAS[target]||{});
+  if(al[h])return al[h];
+  for(const f of defs){const l=normHeader(f.label);if(h.includes(l)||l.includes(h))return f.key;}
+  return '';
+}
+function parseTable(text){
+  const raw=String(text||'').replace(/^\uFEFF/,'');
+  const lines=raw.replace(/\r/g,'').split('\n').map(l=>l.trim().replace(/^\uFEFF/,'')).filter(l=>l!=='');
+  if(!lines.length)return {headers:[],rows:[]};
+  const d=lines[0].includes('\t')?'\t':',';
+  const splitQuoted=(ln)=>{const res=[];let s='';let q=false;for(let i=0;i<ln.length;i++){const c=ln[i];if(c==='"'){if(q&&ln[i+1]==='"'){s+='"';i++;}else q=!q;}else if(c===d&&!q){res.push(s);s='';}else s+=c;}res.push(s);return res;};
+  const headers=splitQuoted(lines[0]).map(h=>h.trim());
+  const rows=lines.slice(1).map(l=>splitQuoted(l)).filter(r=>r.some(c=>c.trim()!==''));
+  return {headers,rows};
+}
+let _xlsxLoading=null;
+function ensureXLSX(){
+  if(window.XLSX)return Promise.resolve();
+  if(_xlsxLoading)return _xlsxLoading;
+  _xlsxLoading=new Promise((res,rej)=>{
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload=()=>res();s.onerror=()=>rej(new Error('load'));
+    document.head.appendChild(s);
+  });
+  return _xlsxLoading;
+}
+function openUpload(page){
+  const targets=uploadTargetsFor(page);
+  gUpload={headers:[],rows:[],target:targets[0].key,map:[],mode:'append'};
+  const tgtSel=targets.length>1?`<div class="form-row"><label>导入到</label><select id="upTarget" onchange="gUpload.target=this.value;upRemap()">`+targets.map(t=>`<option value="${t.key}">${t.label}</option>`).join('')+`</select></div>`:'';
+  const modeSel=`<div class="form-row"><label>导入模式</label><select id="upMode" onchange="gUpload.mode=this.value"><option value="append">追加（保留该表原有数据，新增识别行）</option><option value="replace">覆盖（先清空该表，再导入识别行）</option></select></div>`;
+  const box=$('modalBox');
+  box.innerHTML=`<div class="modal"><div class="modal-head"><span>上传数据 · 智能识别字段</span><button class="modal-close" onclick="closeModal()">&times;</button></div>
+   <div class="modal-body">
+     ${tgtSel}
+     ${modeSel}
+     <div class="form-row"><label>数据表（首行为表头，支持 CSV/TSV 文本或 Excel(.xlsx/.xls)；也可直接粘贴）</label>
+       <textarea id="upText" rows="6" placeholder="在此粘贴表格数据，或选择下方文件"></textarea>
+       <input type="file" id="upFile" accept=".csv,.tsv,.txt,.xlsx,.xls" style="margin-top:8px">
+     </div>
+     <div style="margin-bottom:10px"><button class="btn btn-primary" onclick="upParse()">解析并识别</button></div>
+     <div id="upMap"></div>
+   </div>
+   <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-primary" id="upImportBtn" style="display:none" onclick="upImport()">确认导入</button></div></div>`;
+  $('overlay').classList.add('show');document.body.style.overflow='hidden';
+}
+function upParse(){
+  let text=$('upText').value;
+  const file=$('upFile').files[0];
+  if(!text&&file){
+    const name=(file.name||'').toLowerCase();
+    if(name.endsWith('.xlsx')||name.endsWith('.xls')){
+      ensureXLSX().then(()=>{
+        const rd=new FileReader();
+        rd.onload=(e)=>{try{
+          const wb=XLSX.read(e.target.result,{type:'array'});
+          const ws=wb.Sheets[wb.SheetNames[0]];
+          $('upText').value=XLSX.utils.sheet_to_csv(ws);
+          upParse();
+        }catch(err){toast('xlsx解析失败：'+err.message);}};
+        rd.readAsArrayBuffer(file);
+      }).catch(()=>{toast('无法加载xlsx解析库（需联网），请先用Excel「另存为」CSV再导入');});
+      return;
+    }
+    const r=new FileReader();r.onload=()=>{$('upText').value=r.result;upParse();};r.readAsText(file);return;
+  }
+  const parsed=parseTable(text);
+  if(!parsed.headers.length){toast('未识别到表头，请检查数据格式');return;}
+  gUpload.headers=parsed.headers;gUpload.rows=parsed.rows;upRemap();
+}
+function upRemap(){
+  const defs=getFieldDefs(gUpload.target);
+  const auto=gUpload.headers.map(h=>matchField(h,defs,gUpload.target));
+  gUpload.map=auto;
+  let html=`<div style="margin:6px 0 10px;font-size:13px;font-weight:700">字段映射（已自动识别，可手动调整）</div>`;
+  html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">`;
+  gUpload.headers.forEach((h,i)=>{
+    let o=`<option value="">— 忽略 —</option>`+defs.map(f=>`<option value="${f.key}" ${f.key===auto[i]?'selected':''}>${escapeHtml(f.label)}</option>`).join('');
+    html+=`<div><div style="font-size:11px;color:var(--sub);margin-bottom:3px">${escapeHtml(h)}</div><select id="upmap_${i}" onchange="gUpload.map[${i}]=this.value">${o}</select></div>`;
+  });
+  html+=`</div>`;
+  const preview=gUpload.rows.slice(0,5);
+  html+=`<div style="margin-top:12px;font-size:13px;font-weight:700">预览（前5行）</div><div class="tbl-wrap"><table class="tbl"><thead><tr>`+gUpload.headers.map(h=>`<th>${escapeHtml(h)}</th>`).join('')+`</tr></thead><tbody>`;
+  preview.forEach(r=>{html+=`<tr>`+gUpload.headers.map((h,i)=>`<td>${escapeHtml(r[i]||'')}</td>`).join('')+`</tr>`;});
+  html+=`</tbody></table></div>`;
+  html+=`<div style="margin-top:8px;font-size:12px;color:var(--sub)">共识别 <b>${gUpload.rows.length}</b> 行，将导入到「${gUpload.target}」。</div>`;
+  $('upMap').innerHTML=html;
+  $('upImportBtn').style.display='';
+}
+function upImport(){
+  const target=gUpload.target;
+  if(!target||!gUpload.rows.length){toast('没有可导入的数据');return;}
+  if(gUpload.mode==='replace'){
+    appConfirm('「覆盖」模式将清空「'+target+'」现有全部数据后再导入，确定继续？',()=>doImport('replace',target),true);
+    return;
+  }
+  doImport('append',target);
+}
+function doImport(mode,target){
+  if(mode==='replace'){state[target]=[];save(target);}
+  let n=0;
+  gUpload.rows.forEach(row=>{
+    const rec={id:uid()};
+    gUpload.headers.forEach((h,i)=>{const fk=gUpload.map[i];if(!fk)return;rec[fk]=(row[i]||'').toString().trim();});
+    state[target].push(rec);n++;
+  });
+  save(target);closeModal();render();toast((mode==='replace'?'已覆盖并导入 ':'已追加导入 ')+n+' 条至「'+target+'」');
+}
+
+/* ============ 导出 / 导入 / 清空 / 示例 ============ */
+function exportData(){
+  const all={};STORE_KEYS.forEach(k=>all[k]=state[k]||[]);
+  download('享界政企大客户工作台_备份_'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({app:'xiangjie-keyaccount',version:1,exportedAt:new Date().toISOString(),data:all},null,2));
+  toast('已导出JSON备份');
+}
+function exportSalesCSV(){
+  const rows=(state.purchaseCustomers||[]).slice();
+  const head=['年度','采购/上牌公司名称','用车公司名称','客户简称','客户类型','车型版本','车架号','数量(台)','开票金额','分担预算','交付中心','备注'];
+  const esc=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  let csv='\ufeff'+head.join(',')+'\n';
+  rows.forEach(r=>{csv+=[r.年度||'',r.采购上牌公司||r.客户名称||'',r.用车公司||'',r.客户简称||r.客户名称||'',r.客户类型||'',r.车型版本||r.采购车型||'',r.车架号||'',r.数量||r.销量||r.采购数量||'',r.开票金额||r.销售价格||'',r.分担预算||r.预算金额||'',r.交付中心||'',r.备注||''].map(esc).join(',')+'\n';});
+  download('销售明细_'+new Date().toISOString().slice(0,10)+'.csv',csv,'text/csv;charset=utf-8');
+  toast('已下载销售明细CSV');
+}
+function importData(file){
+  if(!file){toast('未选择文件');return;}
+  const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);const src=d.data||d;STORE_KEYS.forEach(k=>{if(src[k]){state[k]=src[k];save(k);}});F={};render();toast('导入成功，已恢复数据');}catch(e){toast('导入失败：文件格式错误');}};
+  r.readAsText(file);
+  file.value='';
+}
+function clearAll(){
+  appConfirm('⚠️ 此操作将清空全部业务数据（含示例），仅保留分类选项。确定继续？',()=>{
+    appConfirm('再次确认：清空后无法恢复，建议先「导出JSON」备份。',()=>{
+      ['policies','models','developments','customerLib','intentCustomers','purchaseCustomers','projects','events','keyProjects','processes','bidDocs','bidProjects','vehicles'].forEach(k=>{state[k]=[];save(k);});
+      F={};render();toast('已全部清空');
+    },true);
+  },true);
+}
+function restoreSamples(){
+  appConfirm('将用示例数据覆盖当前全部业务数据（分类选项保留）。继续？',()=>{
+    ['policies','models','developments','customerLib','intentCustomers','purchaseCustomers','projects','events','keyProjects','processes','bidDocs','bidProjects','vehicles'].forEach(k=>{state[k]=[];save(k);});
+    seed();render();toast('已载入示例数据');
+  },true);
+}
+
+/* ============ 云同步（前端层，需配合后端 /sync 接口） ============ */
+function syncCfg(){return {url:localStorage.getItem(PREFIX+'syncUrl')||'',token:localStorage.getItem(PREFIX+'syncToken')||''};}
+function openSync(){
+  const c=syncCfg();
+  const auto=localStorage.getItem(PREFIX+'syncAuto')==='1';
+  const box=$('modalBox');
+  box.innerHTML=`<div class="modal"><div class="modal-head"><span>云同步设置</span><button class="modal-close" onclick="closeModal()">&times;</button></div>
+   <div class="modal-body">
+     <div class="form-row"><label>同步仓库文件（格式 owner/repo/path，例 jonas/xiangjie-sync/data.json）</label><input id="syncUrl" value="${escapeHtml(c.url)}" placeholder="如 jonas/xiangjie-sync/data.json"></div>
+     <div class="form-row"><label>GitHub Token（PAT，生成时勾选 repo 权限）</label><input id="syncToken" value="${escapeHtml(c.token)}" placeholder="ghp_ 开头的一串字符"></div>
+     <div class="form-row"><button class="btn btn-primary" onclick="saveSyncCfg()">保存配置</button></div>
+     <div style="display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 12px">
+       <button class="btn btn-ghost" onclick="syncPush()">上传到云端</button>
+       <button class="btn btn-ghost" onclick="syncPull()">从云端拉取</button>
+     </div>
+     <div class="form-row" style="display:flex;align-items:center;gap:10px">
+       <label style="margin:0">自动同步（每5分钟先拉后推）</label>
+       <input type="checkbox" id="syncAuto" ${auto?'checked':''} onchange="toggleAutoSync(this.checked)">
+     </div>
+     <div style="font-size:12px;color:var(--sub);margin-top:6px">说明：手机端与电脑端填入同一仓库文件地址与 Token 即可互通。需在 GitHub 建一个私有仓库（github.com 网页可建），仓库里放一个 data.json 文件。自动同步为「最后写入覆盖」策略，重要改动建议在保存后手动点一次「上传到云端」。数据存于你的私有仓库，仅你与持有 Token 者可访问。</div>
+   </div>
+   <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">关闭</button></div></div>`;
+  $('overlay').classList.add('show');document.body.style.overflow='hidden';
+}
+function saveSyncCfg(){localStorage.setItem(PREFIX+'syncUrl',$('syncUrl').value.trim());localStorage.setItem(PREFIX+'syncToken',$('syncToken').value.trim());toast('同步配置已保存');}
+function syncPush(){
+  const c=syncCfg();const addr=(c.url||'').trim(),token=(c.token||'').trim();
+  if(!addr||!token){toast('请先填写仓库文件地址和 GitHub Token');return;}
+  const m=addr.match(/^([^\/]+)\/([^\/]+)\/(.+)$/);
+  if(!m){toast('地址格式应为 owner/repo/path');return;}
+  const api='https://api.github.com/repos/'+m[1]+'/'+m[2]+'/contents/'+m[3];
+  const all={};STORE_KEYS.forEach(k=>all[k]=state[k]||[]);
+  const payload={app:'xiangjie-keyaccount',version:1,updatedAt:new Date().toISOString(),data:all};
+  const content=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  toast('正在上传…');
+  const head={'Content-Type':'application/json','Authorization':'Bearer '+token,'Accept':'application/vnd.github+json'};
+  fetch(api,{headers:head}).then(r=>r.ok?r.json():null).then(j=>{
+    const sha=j&&j.sha?j.sha:undefined;
+    return fetch(api,{method:'PUT',headers:head,body:JSON.stringify({message:'xiangjie sync',content:content,sha:sha})});
+  }).then(r=>{if(!r||!r.ok)throw new Error('HTTP '+(r?r.status:'?'));toast('已上传到云端(仓库)');})
+    .catch(e=>toast('上传失败：'+e.message));
+}
+function syncPull(){
+  const c=syncCfg();const addr=(c.url||'').trim(),token=(c.token||'').trim();
+  if(!addr||!token){toast('请先填写仓库文件地址和 GitHub Token');return;}
+  const m=addr.match(/^([^\/]+)\/([^\/]+)\/(.+)$/);
+  if(!m){toast('地址格式应为 owner/repo/path');return;}
+  const api='https://api.github.com/repos/'+m[1]+'/'+m[2]+'/contents/'+m[3];
+  toast('正在拉取…');
+  fetch(api,{headers:{'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json'}})
+    .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+    .then(j=>{if(!j.content)throw new Error('无数据');const payload=JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\s/g,'')))));const src=payload.data||payload;if(!src)throw new Error('无数据');let n=0;STORE_KEYS.forEach(k=>{if(src[k]){state[k]=src[k];save(k);n++;}});F={};render();toast('已拉取，更新 '+n+' 个模块');})
+    .catch(e=>toast('拉取失败：'+e.message));
+}
+function toggleAutoSync(on){localStorage.setItem(PREFIX+'syncAuto',on?'1':'0');if(on)startAutoSync();else stopAutoSync();}
+let autoSyncTimer=null;
+function startAutoSync(){if(autoSyncTimer)return;autoSyncTimer=setInterval(()=>{syncPull();setTimeout(syncPush,1500);},5*60*1000);}
+function stopAutoSync(){if(autoSyncTimer){clearInterval(autoSyncTimer);autoSyncTimer=null;}}
+
+/* ============ 预置示例数据（含1条逾期） ============ */
+function seed(){
+  state.models=[
+    {id:uid(),车型名称:'享界S9',车型类别:'通用车型',华为SKU:'HW-S9-001',中邮编码:'ZY-S9-001',工厂整编码:'GC-S9-001',关联销售政策:'',选配清单:'智驾包 / 舒享包',备注:''},
+    {id:uid(),车型名称:'享界S9T',车型类别:'指定车型',华为SKU:'HW-S9T-002',中邮编码:'ZY-S9T-002',工厂整编码:'GC-S9T-002',关联销售政策:'',选配清单:'',备注:''},
+    {id:uid(),车型名称:'享界G9',车型类别:'通用车型',华为SKU:'HW-G9-003',中邮编码:'ZY-G9-003',工厂整编码:'GC-G9-003',关联销售政策:'',选配清单:'',备注:''},
+    {id:uid(),车型名称:'享界V8',车型类别:'通用车型',华为SKU:'HW-V8-004',中邮编码:'ZY-V8-004',工厂整编码:'GC-V8-004',关联销售政策:'',选配清单:'',备注:''}
+  ];
+  state.policies=[
+    {id:uid(),政策名称:'S9/S9T政企批量采购政策Q3',适用车型:'享界S9,享界S9T',政策类型:'通用销售政策',政策要点:'≥5台享98折，≥20台享95折',华为SKU:'HW-S9-001',工厂整编码:'GC-S9-001',销售权益:'赠送3年免费保养 + 免费充电桩安装',备注:''}
+  ];
+  state.developments=[
+    {id:uid(),客户名称:'某央企物流公司',开拓时间:'2026-07-20',对接人:'张经理',对接人职务:'采购总监',开拓形式:'上门拜访',现有车辆保有量:'120台',更换周期:'3年',预计采购时间:'2026-08-20',预计采购量:'20',后续工作:'跟进立项审批与合同',状态:'跟进中'},
+    {id:uid(),客户名称:'某市属国企',开拓时间:'2026-06-10',对接人:'李工',对接人职务:'车队主管',开拓形式:'展会',现有车辆保有量:'45台',更换周期:'4年',预计采购时间:'2026-08-05',预计采购量:'8',后续工作:'补充资质材料',状态:'跟进中'}
+  ];
+  state.customerLib=[
+    {id:uid(),客户名称:'某部委机关服务中心',客户类型:'政府采购',行业:'政府',联系人:'王主任',联系电话:'138****0000',地址:'北京市',备注:''}
+  ];
+  state.intentCustomers=[
+    {id:uid(),客户名称:'某央企物流公司',客户类型:'央企客户',意向采购车型:'享界S9',采购数量:'20',预计采购时间:'2026-08-20',意向级别:'A',备注:''}
+  ];
+  state.purchaseCustomers=[
+    {id:uid(),年度:'2025',采购上牌公司:'某事业单位',用车公司:'某事业单位后勤中心',客户简称:'某事业单位',客户类型:'事业单位',车型版本:'享界S9',车架号:'',数量:'10',开票金额:'2800000',分担预算:'180000',交付中心:'北京交付中心',备注:''},
+    {id:uid(),年度:'2025',采购上牌公司:'某政采单位',用车公司:'',客户简称:'某政采单位',客户类型:'政府采购',车型版本:'享界S9T',车架号:'',数量:'15',开票金额:'4200000',分担预算:'250000',交付中心:'北京交付中心',备注:''},
+    {id:uid(),年度:'2026',采购上牌公司:'某国企集团',用车公司:'',客户简称:'某国企集团',客户类型:'国企客户',车型版本:'享界S9',车架号:'',数量:'30',开票金额:'8400000',分担预算:'320000',交付中心:'上海交付中心',备注:''},
+    {id:uid(),年度:'2026',采购上牌公司:'某政采单位',用车公司:'',客户简称:'某政采单位',客户类型:'政府采购',车型版本:'享界S9T',车架号:'',数量:'8',开票金额:'2240000',分担预算:'150000',交付中心:'北京交付中心',备注:''}
+  ];
+  state.projects=[
+    {id:uid(),项目名称:'某央企物流S9采购',客户名称:'某央企物流公司',客户类型:'央企客户',采购车型:'享界S9',采购数量:'20',采购形式:'公开招标',项目进度:'立项审批',阶段负责人:'张经理',立项启动日期:'2026-07-25',交付日期:'2026-09-20',备注:''}
+  ];
+  state.events=[
+    {id:uid(),活动名称:'政企品鉴会-北京站',活动日期:'2026-08-05',活动地点:'北京',活动要求:'准备试驾车2台、展车1台',车辆需求:'试驾+展车',车辆数量:'3',车辆来源:'试驾车',活动形式:'品鉴会',状态:'筹备中'}
+  ];
+  state.keyProjects=[
+    {id:uid(),项目内容:'总部展厅升级改造',项目时间:'2026-08-25',项目要求:'8月底前完成验收',交付物:'验收报告',负责人:'赵工',状态:'进行中'}
+  ];
+  state.processes=[
+    {id:uid(),制度名称:'大客户销售流程(华为)',制度分类:'大客户销售流程(华为)',内容:'1.线索收集 2.需求确认 3.方案与报价 4.合同签署 5.车辆交付',更新日期:'2026-07-01'},
+    {id:uid(),制度名称:'大客户销售流程(北汽新能源)',制度分类:'大客户销售流程(北汽新能源)',内容:'1.客户建档 2.资质审核 3.价格审批 4.排产要车 5.交付',更新日期:'2026-07-01'},
+    {id:uid(),制度名称:'上会审批(北汽新能源)',制度分类:'上会审批(北汽新能源)',内容:'≥50台需上会审批，附可行性报告与利润测算',更新日期:'2026-07-01'}
+  ];
+  state.bidDocs=[
+    {id:uid(),资料名称:'企业营业执照模板',资料类别:'资质文件',说明:'最新版',更新日期:'2026-07-15'}
+  ];
+  state.bidProjects=[
+    {id:uid(),项目名称:'某市公交集团新能源客车采购',关联客户:'某市公交集团',投标截止日期:'2026-08-22',投标进度:'标书制作',投标结果:'待定',投标实施:'技术标-王工，商务标-李工',备注:''}
+  ];
+  state.vehicles=[
+    {id:uid(),车辆用途:'试驾车',车型:'享界S9',车牌号:'京A·12345',车架号:'LVF1234567890ABCDEF',车辆归属公司:'北京享界汽车销售有限公司',租期:'365',使用人:'门店展示',状态:'在库',门店:'北京享界中心店',备注:''}
+  ];
+  STORE_KEYS.forEach(k=>save(k));
+}
+
+/* ============ 移动端抽屉 ============ */
+function toggleDrawer(){$('sidebar').classList.toggle('open');$('mask').classList.toggle('show');}
+function closeDrawer(){$('sidebar').classList.remove('open');$('mask').classList.remove('show');}
+
+/* ============ 初始化 ============ */
+function init(){
+  loadAll();
+  if(!localStorage.getItem(PREFIX+'inited')){seed();localStorage.setItem(PREFIX+'inited','1');}
+  buildNav();
+  render();
+  if(localStorage.getItem(PREFIX+'syncAuto')==='1')startAutoSync();
+}
+init();
+</script>
+</body>
+</html>
