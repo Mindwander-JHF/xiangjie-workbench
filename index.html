@@ -301,7 +301,8 @@ function fieldHtml(f,val){
       h+=`<div class="checks">`+opts.map(o=>`<label class="chk"><input type="checkbox" class="fld_multi_${f.key}" value="${escapeHtml(o)}" ${sel.includes(o)?'checked':''}> ${escapeHtml(o)}</label>`).join('')+`</div>`;
     }else{
       if(val&&!opts.includes(val))opts=[val].concat(opts);
-      h+=`<select id="fld_${f.key}">`+opts.map(o=>`<option value="${escapeHtml(o)}" ${(o===val||(val===''&&o===f.def))?'selected':''}>${escapeHtml(o)}</option>`).join('')+`</select>`;
+      const blankOpt = f.required?"" : `<option value=""></option>`;
+      h+=`<select id="fld_${f.key}">`+blankOpt+opts.map(o=>`<option value="${escapeHtml(o)}" ${(o===val||(val===''&&o===f.def))?'selected':''}>${escapeHtml(o)}</option>`).join('')+`</select>`;
       if(f.addable)h+=` <button type="button" class="btn-mini" onclick="addOption('${f.optionsKey}','fld_${f.key}')">+ 新增</button>`;
     }
   }else{
@@ -352,6 +353,8 @@ function appConfirm(msg,onYes,danger){
 
 /* ============ 模块字段定义（用于新增/编辑表单） ============ */
 const PROJ_STAGES=['客户对接','招采流程','立项审批','合同签署','订单审批','要车排产','车辆交付'];
+const SALES_MODELS=['享界S9','享界S9T','享界G9','享界V8'];
+const SALES_POLICIES=['通用','公务','特殊','行业'];
 const MODULES={
   policies:{label:'政策管理',fields:[
     {key:'政策名称',label:'政策名称',type:'text',required:true},
@@ -462,12 +465,14 @@ const CUST={
     {key:'用车公司',label:'用车公司名称',type:'text'},
     {key:'客户简称',label:'客户简称',type:'text'},
     {key:'客户类型',label:'客户类型',type:'select',options:CUST_TYPES,addable:false},
+    {key:'采购车型',label:'采购车型',type:'select',options:SALES_MODELS},
     {key:'车型版本',label:'车型版本',type:'text'},
     {key:'车架号',label:'车架号(VIN)',type:'text'},
     {key:'数量',label:'数量(台)',type:'number',def:'1'},
     {key:'开票金额',label:'开票金额(¥)',type:'number'},
     {key:'分担预算',label:'分担预算(¥)',type:'number'},
     {key:'交付中心',label:'交付中心',type:'text'},
+    {key:'政策',label:'政策',type:'select',options:SALES_POLICIES},
     {key:'备注',label:'备注',type:'textarea'}
   ]}
 };
@@ -496,6 +501,7 @@ function kv(label,val){if(val===undefined||val===null||val==='')return '';return
 function pre(val){if(!val)return '';return `<div class="meta pre">${escapeHtml(val)}</div>`;}
 function codeChips(it){const arr=[];if(it.华为SKU)arr.push(['华为SKU',it.华为SKU]);if(it.中邮编码)arr.push(['中邮',it.中邮编码]);if(it.工厂整编码)arr.push(['工厂',it.工厂整编码]);return arr.length?`<div class="code-row">`+arr.map(([k,v])=>`<span class="code">${k}:${escapeHtml(v)}</span>`).join('')+`</div>`:'';}
 function tagType(typ){const m={'政府采购':'tag-red','国企客户':'tag-amber','央企客户':'tag-blue','集团客户':'tag-purple','事业单位':'tag-green','企业客户':'tag-blue','行业客户':'tag-gray'};return m[typ]||'tag-gray';}
+function tagPolicy(p){const m={'通用':'tag-blue','公务':'tag-amber','特殊':'tag-purple','行业':'tag-green'};return m[p]||'tag-gray';}
 function tagStatus(s){const m={'跟进中':'tag-blue','已转化':'tag-green','已搁置':'tag-gray','筹备中':'tag-blue','进行中':'tag-amber','已完成':'tag-green','暂缓':'tag-gray','在库':'tag-green','外出':'tag-amber','已处置':'tag-gray','中标':'tag-green','未中标':'tag-red','待定':'tag-gray','普通销售政策':'tag-blue','特殊销售政策':'tag-amber','通用销售政策':'tag-blue','公务销售政策':'tag-amber','行业销售政策':'tag-green'};return m[s]||'tag-blue';}
 function tagLevel(l){return l==='A'?'tag-red':l==='B'?'tag-amber':'tag-gray';}
 function fmtDateCN(s){if(!s)return '';const m=String(s).match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);if(!m)return s;return m[1]+'年'+Number(m[2])+'月'+Number(m[3])+'日';}
@@ -996,21 +1002,22 @@ function renderSales(){
   const modelOpts=[...new Set(rows.map(r=>r.采购车型).filter(Boolean))];
   const versionOpts=[...new Set(rows.map(r=>r.车型版本).filter(Boolean))];
   const centerOpts=[...new Set(rows.map(r=>r.交付中心).filter(Boolean))];
-  h+=`<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:6px 0 12px">`+salesFilterSelect('年度','pur#年度',state.purchaseYears||[])+salesFilterSelect('客户类型','pur#客户类型',CUST_TYPES)+salesFilterSelect('采购车型','pur#采购车型',modelOpts)+salesFilterSelect('车型版本','pur#车型版本',versionOpts)+salesFilterSelect('交付中心','pur#交付中心',centerOpts)+`</div>`;
+  h+=`<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:6px 0 12px">`+salesFilterSelect('年度','pur#年度',state.purchaseYears||[])+salesFilterSelect('客户类型','pur#客户类型',CUST_TYPES)+salesFilterSelect('采购车型','pur#采购车型',modelOpts)+salesFilterSelect('车型版本','pur#车型版本',versionOpts)+salesFilterSelect('交付中心','pur#交付中心',centerOpts)+salesFilterSelect('政策','pur#政策',SALES_POLICIES)+`</div>`;
   let items=rows.slice();
   if(F['pur#年度'])items=items.filter(x=>x.年度===F['pur#年度']);
   if(F['pur#客户类型'])items=items.filter(x=>x.客户类型===F['pur#客户类型']);
   if(F['pur#采购车型'])items=items.filter(x=>x.采购车型===F['pur#采购车型']);
   if(F['pur#车型版本'])items=items.filter(x=>x.车型版本===F['pur#车型版本']);
   if(F['pur#交付中心'])items=items.filter(x=>x.交付中心===F['pur#交付中心']);
+  if(F['pur#政策'])items=items.filter(x=>x.政策===F['pur#政策']);
   if(!items.length){h+=`<div class="empty">${rows.length?'当前筛选无匹配记录。':'暂无数据，点击上方「+ 新增」或「上传数据」添加。'}</div>`;return h;}
   let qtySum=0;
-  h+=`<div class="tbl-wrap"><table class="tbl sales-tbl"><thead><tr><th style="width:7%">年度</th><th style="width:14%">采购/上牌公司名称</th><th style="width:14%">用车公司名称</th><th style="width:6%">客户简称</th><th style="width:6%">客户类型</th><th style="width:6%">采购车型</th><th style="width:8%">车型版本</th><th style="width:12%">车架号</th><th style="width:5%">开票金额</th><th style="width:5%">分担预算</th><th style="width:8%">交付中心</th><th style="width:4%">数量</th><th style="width:5%">操作</th></tr></thead><tbody>`;
+  h+=`<div class="tbl-wrap"><table class="tbl sales-tbl"><thead><tr><th style="width:6%">年度</th><th style="width:14%">采购/上牌公司名称</th><th style="width:14%">用车公司名称</th><th style="width:5%">客户简称</th><th style="width:5%">客户类型</th><th style="width:6%">采购车型</th><th style="width:7%">车型版本</th><th style="width:4%">数量</th><th style="width:11%">车架号</th><th style="width:5%">开票金额</th><th style="width:5%">分担预算</th><th style="width:7%">交付中心</th><th style="width:6%">政策</th><th style="width:5%">操作</th></tr></thead><tbody>`;
   items.forEach(it=>{
     const q=Number(it.数量||it.销量||it.采购数量||0);qtySum+=q;
-    h+=`<tr><td>${escapeHtml(it.年度||'')}</td><td>${escapeHtml(it.采购上牌公司||it.客户名称||'')}</td><td>${escapeHtml(it.用车公司||'')}</td><td>${escapeHtml(it.客户简称||it.客户名称||'')}</td><td>${t(it.客户类型,tagType(it.客户类型))}</td><td>${escapeHtml(it.采购车型||'')}</td><td>${escapeHtml(it.车型版本||'')}</td><td>${escapeHtml(it.车架号||'')}</td><td>${fmtMoney(it.开票金额||it.销售价格)}</td><td>${fmtMoney(it.分担预算||it.预算金额)}</td><td>${escapeHtml(it.交付中心||'')}</td><td>${q}</td><td><span class="op"><button class="link" onclick="editCust('purchaseCustomers','${it.id}')">编辑</button><button class="link danger" onclick="delCust('purchaseCustomers','${it.id}')">删除</button></span></td></tr>`;
+    h+=`<tr><td>${escapeHtml(it.年度||'')}</td><td>${escapeHtml(it.采购上牌公司||it.客户名称||'')}</td><td>${escapeHtml(it.用车公司||'')}</td><td>${escapeHtml(it.客户简称||it.客户名称||'')}</td><td>${t(it.客户类型,tagType(it.客户类型))}</td><td>${escapeHtml(it.采购车型||'')}</td><td>${escapeHtml(it.车型版本||'')}</td><td>${q}</td><td>${escapeHtml(it.车架号||'')}</td><td>${fmtMoney(it.开票金额||it.销售价格)}</td><td>${fmtMoney(it.分担预算||it.预算金额)}</td><td>${escapeHtml(it.交付中心||'')}</td><td>${t(it.政策||'',tagPolicy(it.政策||''))}</td><td><span class="op"><button class="link" onclick="editCust('purchaseCustomers','${it.id}')">编辑</button><button class="link danger" onclick="delCust('purchaseCustomers','${it.id}')">删除</button></span></td></tr>`;
   });
-  h+=`<tr style="font-weight:700;background:#f8fafc"><td colspan="11" style="text-align:right">合计（本筛选）</td><td>${qtySum}</td><td></td></tr>`;
+  h+=`<tr style="font-weight:700;background:#f8fafc"><td colspan="7" style="text-align:right">合计（本筛选）</td><td>${qtySum}</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
   h+=`</tbody></table></div>`;
   return h;
 }
@@ -1058,7 +1065,7 @@ const ALIAS={
     '用车公司名称':'用车公司','用车单位':'用车公司','使用单位':'用车公司',
     '客户简称':'客户简称','简称':'客户简称',
     '客户类型':'客户类型','类型':'客户类型','客户类别':'客户类型',
-    '车型版本':'车型版本','车型':'车型版本','采购车型':'车型版本','车辆':'车型版本','配置':'车型版本',
+    '车型版本':'车型版本','车型':'车型版本','车辆':'车型版本','配置':'车型版本','政策':'政策',
     '车架号':'车架号','vin':'车架号','车架':'车架号','车架号码':'车架号',
     '数量':'数量','数量台':'数量','台数':'数量','台':'数量','采购数量':'数量',
     '开票金额':'开票金额','金额':'开票金额','开票':'开票金额','价格':'开票金额','销售额':'开票金额','销售价格':'开票金额',
@@ -1191,10 +1198,10 @@ function exportData(){
 }
 function exportSalesCSV(){
   const rows=(state.purchaseCustomers||[]).slice();
-  const head=['年度','采购/上牌公司名称','用车公司名称','客户简称','客户类型','车型版本','车架号','数量(台)','开票金额','分担预算','交付中心','备注'];
+  const head=['年度','采购/上牌公司名称','用车公司名称','客户简称','客户类型','采购车型','车型版本','数量(台)','车架号','开票金额','分担预算','交付中心','政策','备注'];
   const esc=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
   let csv='\ufeff'+head.join(',')+'\n';
-  rows.forEach(r=>{csv+=[r.年度||'',r.采购上牌公司||r.客户名称||'',r.用车公司||'',r.客户简称||r.客户名称||'',r.客户类型||'',r.车型版本||r.采购车型||'',r.车架号||'',r.数量||r.销量||r.采购数量||'',r.开票金额||r.销售价格||'',r.分担预算||r.预算金额||'',r.交付中心||'',r.备注||''].map(esc).join(',')+'\n';});
+  rows.forEach(r=>{csv+=[r.年度||'',r.采购上牌公司||r.客户名称||'',r.用车公司||'',r.客户简称||r.客户名称||'',r.客户类型||'',r.采购车型||'',r.车型版本||'',r.数量||r.销量||r.采购数量||'',r.车架号||'',r.开票金额||r.销售价格||'',r.分担预算||r.预算金额||'',r.交付中心||'',r.政策||'',r.备注||''].map(esc).join(',')+'\n';});
   download('销售明细_'+new Date().toISOString().slice(0,10)+'.csv',csv,'text/csv;charset=utf-8');
   toast('已下载销售明细CSV');
 }
