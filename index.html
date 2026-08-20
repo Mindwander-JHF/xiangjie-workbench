@@ -211,6 +211,23 @@
 /* 销售明细表：固定布局按比例列宽 */
 .sales-tbl{table-layout:fixed}
 .sales-tbl td,.sales-tbl th{word-break:break-all;word-wrap:break-word}
+  /* 弹窗自由缩放手柄（四角+四边可拖拽） */
+  .modal{position:relative}
+  .rh{position:absolute;z-index:30}
+  .rh-nw{top:-3px;left:-3px;width:18px;height:18px;cursor:nwse-resize}
+  .rh-ne{top:-3px;right:-3px;width:18px;height:18px;cursor:nesw-resize}
+  .rh-sw{bottom:-3px;left:-3px;width:18px;height:18px;cursor:nesw-resize}
+  .rh-se{bottom:-3px;right:-3px;width:18px;height:18px;cursor:nwse-resize}
+  .rh-n{top:-3px;left:18px;right:18px;height:9px;cursor:ns-resize}
+  .rh-s{bottom:-3px;left:18px;right:18px;height:9px;cursor:ns-resize}
+  .rh-w{left:-3px;top:18px;bottom:18px;width:9px;cursor:ew-resize}
+  .rh-e{right:-3px;top:18px;bottom:18px;width:9px;cursor:ew-resize}
+  .rh-nw::after,.rh-ne::after,.rh-sw::after,.rh-se::after{content:'';position:absolute;width:9px;height:9px;opacity:.6}
+  .rh-nw::after{left:3px;top:3px;border-left:2px solid var(--sub);border-top:2px solid var(--sub)}
+  .rh-ne::after{right:3px;top:3px;border-right:2px solid var(--sub);border-top:2px solid var(--sub)}
+  .rh-sw::after{left:3px;bottom:3px;border-left:2px solid var(--sub);border-bottom:2px solid var(--sub)}
+  .rh-se::after{right:3px;bottom:3px;border-right:2px solid var(--sub);border-bottom:2px solid var(--sub)}
+
 </style>
 </head>
 <body>
@@ -1388,6 +1405,54 @@ function init(){
   if(!localStorage.getItem(PREFIX+'inited')){seed();localStorage.setItem(PREFIX+'inited','1');}
   buildNav();
   render();
+
+/* ============ 弹窗自由缩放（四角/四边拖拽） ============ */
+function attachResizeHandles(modal){
+  if(modal.dataset.resizable==='1')return;
+  modal.dataset.resizable='1';
+  const dirs=['nw','ne','sw','se','n','s','w','e'];
+  dirs.forEach(d=>{
+    const h=document.createElement('div');
+    h.className='rh rh-'+d;
+    h.dataset.dir=d;
+    h.addEventListener('mousedown',e=>startResize(e,modal,d));
+    modal.appendChild(h);
+  });
+}
+function startResize(e,modal,dir){
+  e.preventDefault();e.stopPropagation();
+  const rect=modal.getBoundingClientRect();
+  modal.style.position='fixed';modal.style.margin='0';
+  modal.style.left=rect.left+'px';modal.style.top=rect.top+'px';
+  modal.style.width=rect.width+'px';modal.style.height=rect.height+'px';
+  modal.style.maxWidth='none';modal.style.maxHeight='none';
+  const sx=rect.left,sy=rect.top,sw=rect.width,sh=rect.height;
+  const startX=e.clientX,startY=e.clientY,MIN_W=320,MIN_H=200;
+  function mm(ev){
+    const dx=ev.clientX-startX,dy=ev.clientY-startY;
+    let nw=sw,nh=sh,nl=sx,nt=sy;
+    if(dir.indexOf('e')>=0)nw=Math.max(MIN_W,sw+dx);
+    if(dir.indexOf('s')>=0)nh=Math.max(MIN_H,sh+dy);
+    if(dir.indexOf('w')>=0){nw=Math.max(MIN_W,sw-dx);nl=sx+(sw-nw);}
+    if(dir.indexOf('n')>=0){nh=Math.max(MIN_H,sh-dy);nt=sy+(sh-nh);}
+    modal.style.width=nw+'px';modal.style.height=nh+'px';
+    modal.style.left=nl+'px';modal.style.top=nt+'px';
+  }
+  function mu(){
+    document.removeEventListener('mousemove',mm);
+    document.removeEventListener('mouseup',mu);
+    document.body.style.userSelect='';
+  }
+  document.body.style.userSelect='none';
+  document.addEventListener('mousemove',mm);
+  document.addEventListener('mouseup',mu);
+}
+const mbObs=new MutationObserver(function(){
+  const m=document.getElementById('modalBox').querySelector('.modal');
+  if(m)attachResizeHandles(m);
+});
+mbObs.observe(document.getElementById('modalBox'),{childList:true});
+
   if(localStorage.getItem(PREFIX+'syncAuto')==='1')startAutoSync();
 }
 init();
